@@ -1,0 +1,22 @@
+{
+    "meta":{
+        "available_resources": [100, 120, 180]
+    },
+    "projects":
+        [
+            {
+                "project_id":0,
+                "required":[1, 2, 4],
+                "optimal":[15, 12, 10],
+                "weights":[0.1, 0.8, 0.1],
+                "allocated":[0, 0, 0]
+            },
+            {
+                "project_id":1,
+                "required":[3, 5, 7],
+                "optimal":[9, 15, 12],
+                "weights":[0.4, 0.2, 0.4],
+                "allocated":[1, 0, 0]
+            }
+        ]
+}

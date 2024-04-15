@@ -74,6 +74,7 @@ interface HomePageState {
   currentSolution: any[]; // Adjust the type according to your solution structure
   currentPerformance: number;
   stop: boolean;
+  firstRun:boolean;
 }
 
 
@@ -134,7 +135,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       },
       currentSolution:[],
       currentPerformance:0,
-      stop:false
+      stop:false,
+      firstRun:true
       
     };
   }
@@ -146,7 +148,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
   
   fetchData(){
-    fetch('/problem_1.json')
+    fetch('/project_data.json')
     .then(response => response.json())
     .then(data => {
       // Extract available resources and projects from the data
@@ -170,7 +172,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
   handleClicked(){
     this.setState({stop:false})
-    this.runATO(5000);
+    this.runATO(10000);
   }
 
   generateRandomSolution = () => {
@@ -192,35 +194,41 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     return solution
   }
 
-  async runATO(numTrades: number) {
+  async runATO(timeoutCount: number) {
     this.setState({ algorithmRunning: true });
-    var solution = this.generateRandomSolution();
+    var solution:Solution;
+    if (this.state.firstRun){
+      solution = this.generateRandomSolution();
+      alert('first run')
+    }else{
+      solution = this.state.currentSolution;
+    }
+    this.setState({firstRun:false})
 
     var bestPerformance = 0;
     var bestSolution: Solution = solution;
 
-    for (var i = 0; i < numTrades; i++) {
-      if (this.state.stop){
-        this.setState({algorithmRunning:false, stop:false})
-        return
-      }
+    const numRandomAtoms = 2;
+    const solutionLength = solution.length;
+
+    const timeout = setTimeout(() => {
+      // Set the flag to stop the loop after 15 seconds
+      this.setState({ stop: true });
+    }, timeoutCount);
+
+    while (!this.state.stop){
         // Select 2 Random Atoms
-        var randomAtoms = [];
-        var indices:Array<number> = [];
-        var numRandomAtoms = 2; // Number of random elements you want to select
-
-        // Generate unique random indices
-        while (indices.length < numRandomAtoms) {
-            var randomIndex = Math.floor(Math.random() * solution.length);
-            if (!indices.includes(randomIndex)) {
-                indices.push(randomIndex);
-            }
+        
+        var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
+        
+        for (let i = solutionLength - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
         }
-
-        // Select elements from `solution` based on random indices
-        for (var l = 0; l < indices.length; l++) {
-            randomAtoms.push(solution[indices[l]]);
-        }
+        
+        var randomIndices = allIndices.slice(0, numRandomAtoms);
+        
+        var randomAtoms = randomIndices.map(index => solution[index]);
 
         var a1Index = solution.indexOf(randomAtoms[0]);
         var a2Index = solution.indexOf(randomAtoms[1]);
@@ -234,7 +242,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         if (currentEvaluation > bestPerformance) {
             bestSolution = solution.slice();
             bestPerformance = currentEvaluation;
-        }
+            console.log(bestPerformance)
+        
 
         // Update chart data
         var projects = bestSolution.map(p => p.project_id);
@@ -243,12 +252,16 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         var projectLabels = [];
         var projectResourceAllocations = [];
 
-        for (var j = 0; j < projects.length; j++) {
-            for (var k = 0; k < 3; k++) {
-                projectLabels.push(`Project${j} (Resource ${k})`);
-                projectResourceAllocations.push(resourceAllocations[j][k]);
-            }
+        for (let j = 0; j < projects.length; j++) {
+          const projectLabelPrefix = `Project${j}`;
+      
+          // Push resource labels and allocations for each project
+          for (let k = 0; k < 3; k++) {
+              projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
+              projectResourceAllocations.push(resourceAllocations[j][k]);
+          }
         }
+      
         // Update chart data in the state
         this.setState({
             data: {
@@ -267,8 +280,14 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         });
 
         // Delay to visualize each iteration (optional)
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      if (this.state.stop){
+        this.setState({algorithmRunning:false, stop:false})
+        return
+      }
     }
+    clearTimeout(timeout);
 
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
