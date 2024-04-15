@@ -170,7 +170,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
   handleClicked(){
     this.setState({stop:false})
-    this.runATO(1000);
+    this.runATO(5000);
   }
 
   generateRandomSolution = () => {
@@ -257,8 +257,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                     {
                         label: "",
                         data: projectResourceAllocations,
-                        backgroundColor: `black`,
-                        borderColor: `goldenrod`,
+                        backgroundColor: `goldenrod`,
+                        borderColor: `black`,
                         borderWidth: 1,
                     },
                 ],
@@ -414,7 +414,7 @@ stopRunning(){
             }
           }
           >
-            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Dissertation Project Demo (Nicholas Latham)</label>
+            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Altruistic Trade Optimisation (ATO) Demo</label>
             <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
           <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px'}}></div>
@@ -499,7 +499,7 @@ stopRunning(){
                   marginRight : '60px'
                 }}
               >
-                {`Performance: ${this.state.currentPerformance}`}
+                {`Optimal Performance: ${this.state.currentPerformance}`}
               </label>
             </div>
 
