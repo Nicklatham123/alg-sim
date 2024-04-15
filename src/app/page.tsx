@@ -139,6 +139,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       firstRun:true
       
     };
+    
   }
 
   
@@ -161,8 +162,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     .catch(error => {
       console.error('Error fetching data:', error);
     });
-
-    
   }
 
   genRanHex(size:number){
@@ -172,7 +171,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
   handleClicked(){
     this.setState({stop:false})
-    this.runATO(10000);
+    this.runATO(200000);
   }
 
   generateRandomSolution = () => {
@@ -195,28 +194,26 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
 
   async runATO(timeoutCount: number) {
-    this.setState({ algorithmRunning: true });
-    var solution:Solution;
-    if (this.state.firstRun){
-      solution = this.generateRandomSolution();
-      alert('first run')
-    }else{
-      solution = this.state.currentSolution;
-    }
-    this.setState({firstRun:false})
+    this.setState({ algorithmRunning: true, currentSolution:[], currentPerformance:0});
+      var solution:Solution = this.generateRandomSolution();
+    // if (this.state.firstRun){
+    // }else{
+    //   solution = this.state.currentSolution;
+    // }
+    // this.setState({firstRun:false})
 
-    var bestPerformance = 0;
     var bestSolution: Solution = solution;
-
+    var bestPerformance = this.evaluateSolution(solution)
     const numRandomAtoms = 2;
     const solutionLength = solution.length;
 
-    const timeout = setTimeout(() => {
-      // Set the flag to stop the loop after 15 seconds
-      this.setState({ stop: true });
-    }, timeoutCount);
+    // const timeout = setTimeout(() => {
+    //   // Set the flag to stop the loop after 15 seconds
+    //   this.setState({ stop: true });
+    // }, timeoutCount);
 
-    while (!this.state.stop){
+    // while (!this.state.stop){
+    for (var i = 0; i< timeoutCount;i++){
         // Select 2 Random Atoms
         
         var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
@@ -287,7 +284,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         return
       }
     }
-    clearTimeout(timeout);
+    // clearTimeout(timeout);
 
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
@@ -297,9 +294,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 }
 
 
-stopRunning(){
-  this.setState({stop:true})
-}
+  stopRunning(){
+    this.setState({stop:true})
+  }
 
   
   collide(atoms:Solution){
@@ -348,10 +345,8 @@ stopRunning(){
 
     if (t1Score > t2Score){
       return t1Atoms
-    }else if (t1Score < t2Score){
+    }else {
       return t2Atoms
-    }else{
-      return atoms
     }
   }
 
