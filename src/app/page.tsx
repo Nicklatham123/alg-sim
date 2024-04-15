@@ -55,6 +55,11 @@ export default class HomePage extends Component{
             type: 'linear', // specify the scale type
             beginAtZero: true,
           },
+          x: {
+            ticks: {
+              display: false, // hide the x-axis ticks
+            },
+          },
         },
         maintainAspectRatio: false, // prevent the chart from maintaining aspect ratio
         responsive: true, // make the chart responsive
@@ -74,9 +79,12 @@ export default class HomePage extends Component{
         },
       },
       currentSolution:[],
+      currentPerformance:0
       
     };
   }
+
+  
 
   componentDidMount() {
     this.fetchData();
@@ -99,6 +107,11 @@ export default class HomePage extends Component{
 
     
   }
+
+  genRanHex(size){
+    return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+  }
+
 
   handleClicked(){
     this.setState({stop:false})
@@ -189,12 +202,13 @@ export default class HomePage extends Component{
                     {
                         // label: "Performance: " + Math.round(0),
                         data: projectResourceAllocations,
-                        backgroundColor: "goldenrod",
-                        borderColor: "goldenrod",
+                        backgroundColor: `black`,
+                        borderColor: `goldenrod`,
                         borderWidth: 1,
                     },
                 ],
-            }
+            },
+            currentPerformance:Math.round(bestPerformance)
         });
 
         // Delay to visualize each iteration (optional)
@@ -207,6 +221,7 @@ export default class HomePage extends Component{
 
     this.setState({ algorithmRunning: false });
 }
+
 
 stopRunning(){
   this.setState({stop:true})
@@ -389,13 +404,69 @@ stopRunning(){
               
               </button> */}
                 </div>
-                <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'start', marginLeft:'15px'}}>
+                <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'start',
+              marginLeft: '15px',
+              width: '100%'
+            }}>
+              <button
+                onMouseEnter={() => this.setState({ b1_hover: true })}
+                onMouseLeave={() => this.setState({ b1_hover: false })}
+                onClick={() => this.handleClicked()}
+                style={{
+                  marginBottom: '20px',
+                  backgroundColor: this.state.b1_hover ? '#676767' : '#545454',
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  marginRight: '10px',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                Set File
+              </button>
+              <button
+                onMouseEnter={() => this.setState({ b2_hover: true })}
+                onMouseLeave={() => this.setState({ b2_hover: false })}
+                onClick={() => { if (this.state.algorithmRunning) { this.stopRunning() } else { this.handleClicked() } }}
+                style={{
+                  marginBottom: '20px',
+                  backgroundColor: this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod' : '#545454',
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  marginRight: 'auto', // aligns the button to the leftmost side
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                {this.state.algorithmRunning ? 'Running... Press Again To Stop' : 'Find Optimal Solution'}
+              </button>
+              <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '60px'
+                }}
+              >
+                {`Performance: ${this.state.currentPerformance}`}
+              </label>
+            </div>
 
-              {/* <input style={{backgroundColor:'#666666', borderRadius:'6px',color:"white", fontFamily:'monospace', fontSize:'20px', textAlign:'center', padding:'10px', marginTop:'0',marginBottom:'15px'}} placeholder="Number Of Resources"></input> */}
-              <button onMouseEnter={()=>this.setState({b1_hover:true})} onMouseLeave={()=>this.setState({b1_hover:false})} onClick={()=>this.handleClicked()} style={{marginBottom:'20px',backgroundColor:this.state.b1_hover ?'#676767':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Set File</button>
-              <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>{if (this.state.algorithmRunning){this.stopRunning()}else{this.handleClicked()}}} style={{marginBottom:'20px',backgroundColor:this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>{this.state.algorithmRunning ? 'Running... Press Again To Stop' : 'Find Optimal Solution'}</button>
-
-              </div>
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
 
               </div>

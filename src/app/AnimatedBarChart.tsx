@@ -1,15 +1,20 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
-import { Chart, registerables} from 'chart.js';
+import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-class AnimatedBarChart extends React.Component {
+interface AnimatedBarChartProps {
+  data: any; // Adjust the type according to your data structure
+  options: any; // Adjust the type according to your options structure
+}
+
+class AnimatedBarChart extends React.Component<AnimatedBarChartProps> {
   render() {
-    var { data, options } = this.props;
+    const { data, options } = this.props;
 
     return (
-      <div style={{width:'97%'}}>
+      <div style={{ width: '97%' }}>
         <Bar data={data} options={options} />
       </div>
     );
