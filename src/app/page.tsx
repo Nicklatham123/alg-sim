@@ -101,6 +101,7 @@ export default class HomePage extends Component{
   }
 
   handleClicked(){
+    this.setState({stop:false})
     this.runATO(1000);
   }
 
@@ -131,6 +132,10 @@ export default class HomePage extends Component{
     var bestSolution: Solution = solution;
 
     for (var i = 0; i < numTrades; i++) {
+      if (this.state.stop){
+        this.setState({algorithmRunning:false, stop:false})
+        return
+      }
         // Select 2 Random Atoms
         var randomAtoms = [];
         var indices = [];
@@ -176,7 +181,6 @@ export default class HomePage extends Component{
                 projectResourceAllocations.push(resourceAllocations[j][k]);
             }
         }
-
         // Update chart data in the state
         this.setState({
             data: {
@@ -204,6 +208,9 @@ export default class HomePage extends Component{
     this.setState({ algorithmRunning: false });
 }
 
+stopRunning(){
+  this.setState({stop:true})
+}
 
   
   collide(atoms:Solution){
@@ -252,8 +259,10 @@ export default class HomePage extends Component{
 
     if (t1Score > t2Score){
       return t1Atoms
-    }else{
+    }else if (t1Score < t2Score){
       return t2Atoms
+    }else{
+      return atoms
     }
   }
 
@@ -384,7 +393,7 @@ export default class HomePage extends Component{
 
               {/* <input style={{backgroundColor:'#666666', borderRadius:'6px',color:"white", fontFamily:'monospace', fontSize:'20px', textAlign:'center', padding:'10px', marginTop:'0',marginBottom:'15px'}} placeholder="Number Of Resources"></input> */}
               <button onMouseEnter={()=>this.setState({b1_hover:true})} onMouseLeave={()=>this.setState({b1_hover:false})} onClick={()=>this.handleClicked()} style={{marginBottom:'20px',backgroundColor:this.state.b1_hover ?'#676767':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Set File</button>
-              <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>{this.handleClicked();}} style={{marginBottom:'20px',backgroundColor:this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>{this.state.algorithmRunning ? 'Running...' : 'Find Optimal Solution'}</button>
+              <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>{if (this.state.algorithmRunning){this.stopRunning()}else{this.handleClicked()}}} style={{marginBottom:'20px',backgroundColor:this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>{this.state.algorithmRunning ? 'Running... Press Again To Stop' : 'Find Optimal Solution'}</button>
 
               </div>
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
