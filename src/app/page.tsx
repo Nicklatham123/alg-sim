@@ -1,6 +1,5 @@
 'use client'
 import Image from "next/image";
-import mainstyles from './styles/homepage.css'
 import { Component } from "react";
 import AnimatedBarChart from "./AnimatedBarChart";
 import { Bar } from "react-chartjs-2";
@@ -10,26 +9,81 @@ Chart.register(...registerables);
 
 
 type Project = {
-  required:Array,
-  optimal:Array,
-  weights:Array,
-  allocated:Array
+  project_id:number,
+  required:Array<number>,
+  optimal:Array<number>,
+  weights:Array<number>,
+  allocated:Array<number>
 }
 
 type Solution = Array<Project>
 
-export default class HomePage extends Component{
-  constructor(props) {
+interface HomePageProps {
+  // Define the type for props here if needed
+}
+
+interface HomePageState {
+  b1_hover: boolean;
+  b2_hover: boolean;
+  selected_alg: string;
+  algorithmRunning: boolean;
+  projects: Solution;
+  availableResources: number[];
+  data: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string;
+      borderColor: string;
+      borderWidth: number;
+    }[];
+  };
+  options: {
+    animation: {
+      duration: number;
+    };
+    scales: {
+      y: {
+        type: string;
+        beginAtZero: boolean;
+      };
+      x: {
+        ticks: {
+          display: boolean;
+        };
+      };
+    };
+    maintainAspectRatio: boolean;
+    responsive: boolean;
+    plugins: {
+      legend: {
+        display: boolean;
+        position: string;
+      };
+    };
+    layout: {
+      padding: {
+        top: number;
+        bottom: number;
+        left: number;
+        right: number;
+      };
+    };
+  };
+  currentSolution: any[]; // Adjust the type according to your solution structure
+  currentPerformance: number;
+  stop: boolean;
+}
+
+
+export default class HomePage extends Component<HomePageProps, HomePageState>{
+  constructor(props:HomePageProps) {
     super(props);
 
     this.state = {
-      view:0,
       b1_hover:false,
       b2_hover:false,
-      b3_hover:false,
-      b4_hover:false,
-      b5_hover:false,
-      b6_hover:false,
       selected_alg:'ato',
       algorithmRunning:false,
       projects: [],
@@ -79,7 +133,8 @@ export default class HomePage extends Component{
         },
       },
       currentSolution:[],
-      currentPerformance:0
+      currentPerformance:0,
+      stop:false
       
     };
   }
@@ -108,7 +163,7 @@ export default class HomePage extends Component{
     
   }
 
-  genRanHex(size){
+  genRanHex(size:number){
     return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
   }
 
@@ -151,7 +206,7 @@ export default class HomePage extends Component{
       }
         // Select 2 Random Atoms
         var randomAtoms = [];
-        var indices = [];
+        var indices:Array<number> = [];
         var numRandomAtoms = 2; // Number of random elements you want to select
 
         // Generate unique random indices
@@ -200,7 +255,7 @@ export default class HomePage extends Component{
                 labels: projectLabels,
                 datasets: [
                     {
-                        // label: "Performance: " + Math.round(0),
+                        label: "",
                         data: projectResourceAllocations,
                         backgroundColor: `black`,
                         borderColor: `goldenrod`,
@@ -235,7 +290,7 @@ stopRunning(){
     const numberOfResources = this.state.availableResources.length
     for (var i = 0; i<numberOfResources;i++){
       if (t1Atoms[1].allocated[i] > 0){
-        var randomP2Segments:Array = [];
+        var randomP2Segments = [];
         if (t1Atoms[1].allocated[i] == 1){
           randomP2Segments = [t1Atoms[1].allocated[i]]
         }else{
@@ -254,7 +309,7 @@ stopRunning(){
 
     for (var i = 0; i<numberOfResources;i++){
       if (t2Atoms[1].allocated[i] > 0){
-        var randomP1Segments:Array = [];
+        var randomP1Segments = [];
         if (t2Atoms[1].allocated[i] == 1){
           randomP1Segments = [t2Atoms[0].allocated[i]]
         }else{
@@ -309,7 +364,7 @@ stopRunning(){
     return sumPerformance
   }
 
-  calculatePerformance(project){
+  calculatePerformance(project:Project){
       const allocated = project.allocated
       const required = project.required
       const weights = project.weights
@@ -329,11 +384,11 @@ stopRunning(){
       return sum;
   }
 
-  getSegments(a, n) {
-    var pieces:Array = [];
+  getSegments(a:number, n:number) {
+    var pieces = [];
     for (var idx = 0; idx < n - 1; idx++) {
         // Calculate the maximum value this segment can take
-        var maxPiece = a - pieces.reduce((acc, val) => acc + val, 0) - (n - idx - 1);
+        var maxPiece:number = a - pieces.reduce((acc, val) => acc + val, 0) - (n - idx - 1);
         // Generate a random number within the possible range
         var piece = Math.floor(Math.random() * maxPiece) + 1;
         pieces.push(piece);
@@ -345,7 +400,7 @@ stopRunning(){
 
   render(){
     return (
-      <div style={mainstyles.body}>
+      <div style={{backgroundColor:'#222222',width: '100vw', height:'100vh'}}>
         <div style={
             {
               backgroundColor:'#222222',
@@ -363,24 +418,6 @@ stopRunning(){
             <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
           <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px'}}></div>
-          {/* <div style={{
-                backgroundColor:'#343434',
-                width:'86vw',
-                height:'12vh',
-                display:'flex',
-                flex:1,
-                alignItems:'center',
-                justifyContent:'center',
-                flexDirection:'row',
-                marginLeft:'7vw',
-                marginTop:'20px',
-                borderRadius:'6px'
-          }}>
-            <button onMouseEnter={()=>this.setState({b1_hover:true})} onMouseLeave={()=>this.setState({b1_hover:false})} onClick={()=>this.setState({view:0})} style={{backgroundColor:this.state.b1_hover || this.state.view === 0?'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Resource Management Simulator
-            </button>
-            <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>this.setState({view:1})} style={{backgroundColor:this.state.b2_hover || this.state.view === 1?'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginLeft:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Trivial Problem Simulator
-            </button>
-          </div> */}
           <div style={{
                 backgroundColor:'#343434',
                 width:'86vw',
@@ -394,7 +431,6 @@ stopRunning(){
                 marginTop:'20px',
                 borderRadius:'6px'
           }}>
-            {this.state.view === 0 && (
             <div style={{alignItems:'center', justifyContent:'start',flexDirection:'column', display:'block', flex:1, marginTop:'10', height:'100%', width:'100%'}}>
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',marginBottom:'15px'}}>
                 {/* <button onMouseEnter={()=>this.setState({b4_hover:true})} onMouseLeave={()=>this.setState({b4_hover:false})} onClick={()=>this.setState({selected_alg:'ga'})} style={{backgroundColor:this.state.b4_hover || this.state.selected_alg === 'ga' ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Genetic Algorithm
@@ -473,12 +509,7 @@ stopRunning(){
               <div style={{width:'100%', height:'60vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
                 <AnimatedBarChart data={this.state.data} options={this.state.options} />
               </div>
-            </div>)}
-
-            {this.state.view === 1 && (
-            <div>
-                
-            </div>)}
+            </div>
             </div>
       </div>
     );
