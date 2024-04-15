@@ -1,113 +1,407 @@
+'use client'
 import Image from "next/image";
+import mainstyles from './styles/homepage.css'
+import { Component } from "react";
+import AnimatedBarChart from "./AnimatedBarChart";
+import { Bar } from "react-chartjs-2";
+import { Chart, registerables} from 'chart.js';
 
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+Chart.register(...registerables);
+
+
+type Project = {
+  required:Array,
+  optimal:Array,
+  weights:Array,
+  allocated:Array
+}
+
+type Solution = Array<Project>
+
+export default class HomePage extends Component{
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      view:0,
+      b1_hover:false,
+      b2_hover:false,
+      b3_hover:false,
+      b4_hover:false,
+      b5_hover:false,
+      b6_hover:false,
+      selected_alg:'ato',
+      algorithmRunning:false,
+      projects: [],
+      availableResources: [],
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Performance: ",
+            data: [],
+            backgroundColor: "goldenrod",
+            borderColor: "goldenrod",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        animation: {
+          duration: 200,
+        },
+        scales: {
+          y: {
+            type: 'linear', // specify the scale type
+            beginAtZero: true,
+          },
+        },
+        maintainAspectRatio: false, // prevent the chart from maintaining aspect ratio
+        responsive: true, // make the chart responsive
+        plugins: {
+          legend: {
+            display: false,
+            position: 'top', // adjust legend position as needed
+          },
+        },
+        layout: {
+          padding: {
+            top: 10,
+            bottom: 10,
+            left: 10,
+            right: 10,
+          }
+        },
+      },
+      currentSolution:[],
+      
+    };
+  }
+
+  componentDidMount() {
+    this.fetchData();
+  }
+  
+  fetchData(){
+    fetch('/problem_1.json')
+    .then(response => response.json())
+    .then(data => {
+      // Extract available resources and projects from the data
+      const { meta, projects } = data;
+      const availableResources = meta.available_resources;
+      // Update state with fetched data
+      this.setState({ availableResources, projects });
+      this.setState({currentSolution: projects})
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+
+    
+  }
+
+  handleClicked(){
+    this.runATO(1000);
+  }
+
+  generateRandomSolution = () => {
+    var solution:Solution = this.state.projects
+    var availableResources = this.state.availableResources
+    for (var i = 0; i<availableResources.length;i++){
+      while (availableResources[i] > 0){
+        console.log('Generating Random Solution')
+        var random_index = Math.floor(Math.random() * solution.length)
+          if (solution[random_index].allocated[i] < solution[random_index].optimal[i]){
+            solution[random_index].allocated[i] += 1;
+            availableResources[i] -= 1
+          }else{
+            console.error('allocation failed - over optimal constraint')
+          }
+        }
+        console.log('Random Solution Generated')
+    }
+    return solution
+  }
+
+  async runATO(numTrades: number) {
+    this.setState({ algorithmRunning: true });
+    var solution = this.generateRandomSolution();
+
+    var bestPerformance = 0;
+    var bestSolution: Solution = solution;
+
+    for (var i = 0; i < numTrades; i++) {
+        // Select 2 Random Atoms
+        var randomAtoms = [];
+        var indices = [];
+        var numRandomAtoms = 2; // Number of random elements you want to select
+
+        // Generate unique random indices
+        while (indices.length < numRandomAtoms) {
+            var randomIndex = Math.floor(Math.random() * solution.length);
+            if (!indices.includes(randomIndex)) {
+                indices.push(randomIndex);
+            }
+        }
+
+        // Select elements from `solution` based on random indices
+        for (var l = 0; l < indices.length; l++) {
+            randomAtoms.push(solution[indices[l]]);
+        }
+
+        var a1Index = solution.indexOf(randomAtoms[0]);
+        var a2Index = solution.indexOf(randomAtoms[1]);
+
+        var adjustedAtoms: Solution = this.collide(randomAtoms);
+
+        solution[a1Index] = adjustedAtoms[0];
+        solution[a2Index] = adjustedAtoms[1];
+
+        var currentEvaluation = this.evaluateSolution(solution);
+        if (currentEvaluation > bestPerformance) {
+            bestSolution = solution.slice();
+            bestPerformance = currentEvaluation;
+        }
+
+        // Update chart data
+        var projects = bestSolution.map(p => p.project_id);
+        var resourceAllocations = bestSolution.map(p => p.allocated);
+
+        var projectLabels = [];
+        var projectResourceAllocations = [];
+
+        for (var j = 0; j < projects.length; j++) {
+            for (var k = 0; k < 3; k++) {
+                projectLabels.push(`Project${j} (Resource ${k})`);
+                projectResourceAllocations.push(resourceAllocations[j][k]);
+            }
+        }
+
+        // Update chart data in the state
+        this.setState({
+            data: {
+                labels: projectLabels,
+                datasets: [
+                    {
+                        // label: "Performance: " + Math.round(0),
+                        data: projectResourceAllocations,
+                        backgroundColor: "goldenrod",
+                        borderColor: "goldenrod",
+                        borderWidth: 1,
+                    },
+                ],
+            }
+        });
+
+        // Delay to visualize each iteration (optional)
+        await new Promise(resolve => setTimeout(resolve, 10));
+    }
+
+    console.log('Best Solution: ' + bestPerformance)
+    console.log('Solution')
+    console.log(bestSolution)
+
+    this.setState({ algorithmRunning: false });
+}
+
+
+  
+  collide(atoms:Solution){
+    var t1Atoms = atoms.slice();
+    var t2Atoms = atoms.slice();
+
+    const numberOfResources = this.state.availableResources.length
+    for (var i = 0; i<numberOfResources;i++){
+      if (t1Atoms[1].allocated[i] > 0){
+        var randomP2Segments:Array = [];
+        if (t1Atoms[1].allocated[i] == 1){
+          randomP2Segments = [t1Atoms[1].allocated[i]]
+        }else{
+          randomP2Segments = this.getSegments(t1Atoms[1].allocated[i], Math.floor(Math.random() * t1Atoms[1].allocated[i]))
+        }
+        const p1Wants = randomP2Segments.filter(x => t1Atoms[0].allocated[i] + x <= t1Atoms[0].optimal[i]);
+        if (p1Wants.length > 0){
+          var p1Want = Math.max(...p1Wants);
+          t1Atoms[0].allocated[i] += p1Want
+          t1Atoms[1].allocated[i] -= p1Want
+        }
+      }
+    }
+    
+    const t1Score = this.evaluateProject(t1Atoms[0]) + this.evaluateProject(t1Atoms[1]);
+
+    for (var i = 0; i<numberOfResources;i++){
+      if (t2Atoms[1].allocated[i] > 0){
+        var randomP1Segments:Array = [];
+        if (t2Atoms[1].allocated[i] == 1){
+          randomP1Segments = [t2Atoms[0].allocated[i]]
+        }else{
+          randomP1Segments = this.getSegments(t2Atoms[0].allocated[i], Math.floor(Math.random() * t2Atoms[0].allocated[i]))
+        }
+        const p2Wants = randomP1Segments.filter(x => t2Atoms[1].allocated[i] + x <= t2Atoms[1].optimal[i]);
+        
+        if (p2Wants.length > 0){
+          var p2Want = Math.max(...p2Wants);
+
+          t2Atoms[1].allocated[i] += p2Want
+          t2Atoms[0].allocated[i] -= p2Want
+        }
+      }
+    }
+    const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
+
+    if (t1Score > t2Score){
+      return t1Atoms
+    }else{
+      return t2Atoms
+    }
+  }
+
+  evaluateSolution(solution:Solution){
+    var sumPerformance = 0
+    for (const project of solution){
+      sumPerformance += this.calculatePerformance(project)
+    }
+    return sumPerformance
+  }
+
+  evaluateProject(project:Project){
+    var numberOfResources = project.required.length
+    var sumPerformance = 0
+    var requirementsMet = true
+    for (var i = 0; i<numberOfResources;i++){
+        if (project.allocated[i] < project.required[i]){
+          requirementsMet = false
+          sumPerformance += this.calculatePerformance(project)
+        }else{
+          sumPerformance -= this.calculatePerformance(project)
+        }
+      }
+    // if (requirementsMet){    
+    //     sumPerformance += this.calculatePerformance(project)
+    // }else{
+        
+    // }
+    return sumPerformance
+  }
+
+  calculatePerformance(project){
+      const allocated = project.allocated
+      const required = project.required
+      const weights = project.weights
+      // Check if the lists have the same length
+        if (allocated.length !== weights.length) {
+          throw new Error("Lists must have the same length");
+      }
+      // Initialize the sum
+      var sum = 0;
+      
+      // Iterate through both lists and accumulate the sum
+      for (var i = 0; i < allocated.length; i++) {
+        sum += allocated[i] * weights[i];
+      }
+      
+      // Return the sum
+      return sum;
+  }
+
+  getSegments(a, n) {
+    var pieces:Array = [];
+    for (var idx = 0; idx < n - 1; idx++) {
+        // Calculate the maximum value this segment can take
+        var maxPiece = a - pieces.reduce((acc, val) => acc + val, 0) - (n - idx - 1);
+        // Generate a random number within the possible range
+        var piece = Math.floor(Math.random() * maxPiece) + 1;
+        pieces.push(piece);
+    }
+    // Append last segment
+    pieces.push(a - pieces.reduce((acc, val) => acc + val, 0));
+    return pieces;
+  }
+
+  render(){
+    return (
+      <div style={mainstyles.body}>
+        <div style={
+            {
+              backgroundColor:'#222222',
+              width:'100vw',
+              height:'12vh',
+              display:'flex',
+              flex:1,
+              alignItems:'center',
+              justifyContent:'center',
+              flexDirection:'column'
+            }
+          }
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Dissertation Project Demo (Nicholas Latham)</label>
+            <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
+          </div>
+          <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px'}}></div>
+          {/* <div style={{
+                backgroundColor:'#343434',
+                width:'86vw',
+                height:'12vh',
+                display:'flex',
+                flex:1,
+                alignItems:'center',
+                justifyContent:'center',
+                flexDirection:'row',
+                marginLeft:'7vw',
+                marginTop:'20px',
+                borderRadius:'6px'
+          }}>
+            <button onMouseEnter={()=>this.setState({b1_hover:true})} onMouseLeave={()=>this.setState({b1_hover:false})} onClick={()=>this.setState({view:0})} style={{backgroundColor:this.state.b1_hover || this.state.view === 0?'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Resource Management Simulator
+            </button>
+            <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>this.setState({view:1})} style={{backgroundColor:this.state.b2_hover || this.state.view === 1?'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginLeft:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Trivial Problem Simulator
+            </button>
+          </div> */}
+          <div style={{
+                backgroundColor:'#343434',
+                width:'86vw',
+                height:'80vh',
+                display:'flex',
+                flex:1,
+                alignItems:'start',
+                justifyContent:'center',
+                flexDirection:'row',
+                marginLeft:'7vw',
+                marginTop:'20px',
+                borderRadius:'6px'
+          }}>
+            {this.state.view === 0 && (
+            <div style={{alignItems:'center', justifyContent:'start',flexDirection:'column', display:'block', flex:1, marginTop:'10', height:'100%', width:'100%'}}>
+              <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',marginBottom:'15px'}}>
+                {/* <button onMouseEnter={()=>this.setState({b4_hover:true})} onMouseLeave={()=>this.setState({b4_hover:false})} onClick={()=>this.setState({selected_alg:'ga'})} style={{backgroundColor:this.state.b4_hover || this.state.selected_alg === 'ga' ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Genetic Algorithm
+                
+                </button>
+                <button onMouseEnter={()=>this.setState({b5_hover:true})} onMouseLeave={()=>this.setState({b5_hover:false})} onClick={()=>this.setState({selected_alg:'gga'})} style={{backgroundColor:this.state.b5_hover || this.state.selected_alg === 'gga' ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Altruistic Algorithm
+              
+              </button> */}
+                </div>
+                <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'start', marginLeft:'15px'}}>
+
+              {/* <input style={{backgroundColor:'#666666', borderRadius:'6px',color:"white", fontFamily:'monospace', fontSize:'20px', textAlign:'center', padding:'10px', marginTop:'0',marginBottom:'15px'}} placeholder="Number Of Resources"></input> */}
+              <button onMouseEnter={()=>this.setState({b1_hover:true})} onMouseLeave={()=>this.setState({b1_hover:false})} onClick={()=>this.handleClicked()} style={{marginBottom:'20px',backgroundColor:this.state.b1_hover ?'#676767':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Set File</button>
+              <button onMouseEnter={()=>this.setState({b2_hover:true})} onMouseLeave={()=>this.setState({b2_hover:false})} onClick={()=>{this.handleClicked();}} style={{marginBottom:'20px',backgroundColor:this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>{this.state.algorithmRunning ? 'Running...' : 'Find Optimal Solution'}</button>
+
+              </div>
+              <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
+
+              </div>
+              <div style={{width:'100%', height:'60vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
+                <AnimatedBarChart data={this.state.data} options={this.state.options} />
+              </div>
+            </div>)}
+
+            {this.state.view === 1 && (
+            <div>
+                
+            </div>)}
+            </div>
       </div>
+    );
+  }
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
 }

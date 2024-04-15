@@ -1,0 +1,119 @@
+Project r_0_requiredr_0_optimalr_1_requiredr_1_optimalr_2_requiredr_2_optimal
+Project
+0                  2          3           3          7           9         12
+Project
+1                 24         36           6         26           4         21
+Project
+2                  1          1           2         13          20         34
+Project
+3                 16         24          10         16           1         14
+Project
+4                  2          3           7         40           8         15
+Project
+5                  4          5           8         11           8         25
+Project
+6                  5         45           3         11           7         13
+Project
+7                  2          3          14         37           3          7
+Project
+8                 11         18          20         27           3         10
+Project
+9                  7         33           4          7           5         20
+Project
+10                 2          5          13         19          25         56
+Project
+11                29         35           7         15           5         20
+Project
+12                 6         13           1          1           1          1
+Project
+13                22         27           1          2           9         38
+Project
+14                15         21          27         93           7         17
+Project
+15                 2          6          51         90           8         38
+Project
+16                 7         29           6         59          18         39
+Project
+17                11         19           5         20          42         68
+Project
+18                 5          6           1          2           1          4
+Project
+19                 4          7           4          7           1          1
+Project
+20                26         35           1          2           1          1
+Project
+21                 2          9          35         83           7         17
+Project
+22                 2         14          37         47           1          2
+Project
+23                 1          2          19         32           8         57
+Project
+24                 7         13           4         90          18         25
+Project
+25                 6          8           7         32           2         10
+Project
+26                21         38          12         15           3         11
+Project
+27                14         23           5          8           4         38
+Project
+28                19         35          15         42          54         80
+Project
+29                16         39          10         46          16         43
+Project
+30                 3          5          11         13          21         38
+Project
+31                 3          4           6         17          30         41
+Project
+32                 1          5          12         16          25         34
+Project
+33                 4         17           1          4          22         30
+Project
+34                 6         21           1          3           5         23
+Project
+35                 5          9           4         12           4         11
+Project
+36                 2          3           9         70           2         18
+Project
+37                38         47           3          6           3          6
+Project
+38
+           2    6    4   23    8   21
+Project
+39         1    7   29   40   17   30
+Project
+40         1    1    7   26    6   15
+Project
+41         5   12    4   11    5   14
+Project
+42         7   36   23   60   17   39
+Project
+43         7   14   33   53   12   18
+Project
+44        27   37    2   36   30   53
+Project
+45        14   21   14   59   15   33
+Project
+46         2    3   16   19   22   42
+Project
+47        17   22   34   48    1    1
+Project
+48         6   11    1   39    8   43
+Project
+49        14   39   16   28   50   65
+Project
+50        13   18   12   39    9   22
+Project
+51        17   23   11   24    3   13
+Project
+52         8   20    3   13    1    2
+Project
+53         2    4   57   69    1    4
+Project
+54         2    4    8   22    3   17
+Project
+55        15   23    4   11    9   19
+Project
+56         1    1    7   12   11   18
+Project
+57         2    3   50   85    4    8
+
