@@ -89,6 +89,7 @@ interface HomePageState {
     waste:number,
     avgProjectSatisfaction:number,
     numActivated:number,
+    sumPerformance:number,
   };
 }
 
@@ -165,6 +166,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         waste:0,
         avgProjectSatisfaction:0,
         numActivated:0,
+        sumPerformance:0,
       }
       
     };
@@ -178,7 +180,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
   
   fetchData(){
-    fetch('/project_data_5499.json')
+    fetch('/project_data_30_5.json')
     .then(response => response.json())
     .then(data => {
       // Extract available resources and projects from the data
@@ -377,7 +379,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         
 
         // Delay to visualize each iteration (optional)
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
       if (this.state.stop){
         this.setState({algorithmRunning:false, stop:false})
@@ -552,6 +554,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         if (requirementsMet == true){
           numActivated += 1
           sumProjectSatisfaction += projectSatisfaction
+          sumPerformance += this.calculatePerformance(project)
         }
       }
     console.log(sumProjectSatisfaction)
@@ -567,7 +570,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     this.setState({currentStats:{
       waste:waste,
       avgProjectSatisfaction:avgProjectSatisfaction,
-      numActivated:numActivated
+      numActivated:numActivated,
+      sumPerformance:sumPerformance,
     }})
     return [sumPerformance, avgProjectSatisfaction, waste]
   }
@@ -654,6 +658,14 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               >
                 {`Iteration: ${this.state.iteration+1}`}
               </label> */}
+                            <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '15px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '40px'}}>{`Sum Return: ${Math.round(this.state.currentStats.sumPerformance * 10) / 10}`}</label>
               <label
                 style={{
                   alignSelf: 'center',
@@ -681,7 +693,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
-                  marginRight : '40px'}}>{`Num Activated: ${this.state.currentStats.numActivated}`}</label>
+                  marginRight : '40px'}}>{`Num Activated: ${this.state.currentStats.numActivated} / ${this.state.currentSolution.length}`}</label>
               <label
                 style={{
                   alignSelf: 'center',
