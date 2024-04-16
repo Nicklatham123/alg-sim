@@ -25,6 +25,9 @@ interface HomePageProps {
 interface HomePageState {
   b1_hover: boolean;
   b2_hover: boolean;
+  b3_hover: boolean;
+  b4_hover:boolean;
+  b5_hover:boolean;
   selected_alg: string;
   algorithmRunning: boolean;
   projects: Solution;
@@ -77,6 +80,11 @@ interface HomePageState {
   firstRun:boolean;
   iteration:number;
   generatingSolution:boolean;
+
+  acceptOriginal:boolean;
+  selectorMethod:string;
+  maxIterations:number;
+  selectedFile:any;
 }
 
 
@@ -87,6 +95,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     this.state = {
       b1_hover:false,
       b2_hover:false,
+      b3_hover:false,
+      b4_hover:false,
+      b5_hover:false,
       selected_alg:'ato',
       algorithmRunning:false,
       projects: [],
@@ -141,6 +152,10 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       firstRun:true,
       iteration:0,
       generatingSolution:false,
+      acceptOriginal:false,
+      selectorMethod:'Random',
+      maxIterations:3,
+      selectedFile:null
       
     };
     
@@ -171,6 +186,35 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   genRanHex(size:number){
     return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
   }
+
+  handleFileChange = (event:any) => {
+    const selectedFile = event.target.files[0];
+
+    // Create a new FileReader instance
+    const reader = new FileReader();
+
+    // Define a function to handle file reading completion
+    reader.onload = (event:any) => {
+      if (event.target && event.target.result) {
+        // Access the file content using event.target.result
+        const data = JSON.parse(event.target.result);
+
+        const { meta, projects } = data;
+        const availableResources = meta.available_resources;
+        this.setState({ availableResources, projects });
+        this.setState({currentSolution: projects})
+      }
+    };
+
+    // Read the contents of the selected file as text
+    reader.readAsText(selectedFile);
+};
+
+  handleUpload = () => {
+      const { selectedFile } = this.state;
+
+      
+  };
 
 
   handleClicked(){
@@ -252,10 +296,10 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     const timeout = setTimeout(() => {
       // Set the flag to stop the loop after 15 seconds
       this.setState({ stop: true });
-    }, timeoutCount);
+    }, Math.round(this.state.maxIterations * 1000));
     var iterations = 0;
     while (!this.state.stop){
-    // for (var i = 0; i< timeoutCount;i++){
+    // for (var i = 0; i< this.state.maxIterations;i++){
         // iterations ++;
         // this.setState({iteration:iterations})
 
@@ -359,7 +403,18 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         }
         const p1Wants = randomP2Segments.filter(x => t1Atoms[0].allocated[i] + x <= t1Atoms[0].optimal[i]);
         if (p1Wants.length > 0){
-          var p1Want = Math.max(...p1Wants);
+          var p1Want = p1Wants[Math.floor(Math.random() * p1Wants.length)];
+          switch (this.state.selectorMethod){
+            case 'Random':
+              p1Want = p1Wants[Math.floor(Math.random() * p1Wants.length)];
+              break;
+            case 'Min':
+              p1Want = Math.min(...p1Wants)
+              break;
+            case 'Max':
+              p1Want = Math.max(...p1Wants)
+              break;
+          }
           t1Atoms[0].allocated[i] += p1Want
           t1Atoms[1].allocated[i] -= p1Want
         }
@@ -379,7 +434,19 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         const p2Wants = randomP1Segments.filter(x => t2Atoms[1].allocated[i] + x <= t2Atoms[1].optimal[i]);
         
         if (p2Wants.length > 0){
-          var p2Want = Math.max(...p2Wants);
+          var p2Want = p2Wants[Math.floor(Math.random() * p2Wants.length)];
+          switch (this.state.selectorMethod){
+            case 'Random':
+              p2Want = p2Wants[Math.floor(Math.random() * p2Wants.length)];
+              break;
+            case 'Min':
+              p2Want = Math.min(...p2Wants)
+              break;
+            case 'Max':
+              p2Want = Math.max(...p2Wants)
+              break;
+          }
+          
 
           t2Atoms[1].allocated[i] += p2Want
           t2Atoms[0].allocated[i] -= p2Want
@@ -388,9 +455,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     }
     const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
     const t0Score = this.evaluateProject(atoms[0]) + this.evaluateProject(atoms[1]);
-    // if (t0Score > t1Score && t0Score > t2Score){
-    //   return atoms
-    // }
+    if (t0Score > t1Score && t0Score > t2Score && this.state.acceptOriginal){
+      return atoms
+    }
     if (t1Score > t2Score){
       return t1Atoms
     }else {
@@ -444,7 +511,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       return sum;
   }
 
-  analysePerformance(solution){
+  analysePerformance(solution:Solution){
     var numActivated = 0
     var sumPerformance = 0
     var sumResourcesUsed = Array(this.state.availableResources.length).fill(0);
@@ -489,6 +556,17 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     return [sumPerformance, avgProjectSatisfaction, waste]
   }
 
+  handleFileButtonClick = () => {
+    const fileInputElement = document.getElementById('fileInput');
+    if (fileInputElement) {
+        // Trigger file selection dialog by clicking the hidden input element
+        fileInputElement.click();
+    } else {
+        console.error('File input element not found');
+    }
+};
+
+
   getSegments(a:number, n:number) {
     var pieces = [];
     for (var idx = 0; idx < n - 1; idx++) {
@@ -522,21 +600,23 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Altruistic Trade Optimisation (ATO) Demo</label>
             <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
-          <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex'}}></div>
+          <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex', flex:1, flexDirection:'row'}}></div>
           <div style={{
-                backgroundColor:'#787878',
-                width:'86vw',
-                height:'80vh',
-                display:'flex',
-                flex:3,
-                alignItems:'start',
-                justifyContent:'center',
-                flexDirection:'row',
-                marginLeft:'7vw',
-                marginTop:'20px',
-                borderRadius:'6px'
-          }}>
-            <div style={{alignItems:'center', justifyContent:'start',flexDirection:'column', display:'block', flex:1, marginTop:'10', height:'100%', width:'100%'}}>
+                display: 'flex',
+                flexDirection: 'row', // Arrange children horizontally
+                backgroundColor: '#313131',
+                width: '90vw', // Adjust the width as needed
+                height: '80vh',
+                marginLeft:'5vw',
+                marginTop: '20px',
+                borderRadius: '6px',
+                borderColor:'goldenrod',
+                borderWidth:'3px'
+            }}>
+            <div style={{
+                flex: 1, // Occupy remaining space
+                margin: '15px', // Adjust margin as needed
+                }}>
               <div style={{
               display: 'flex',
               flexDirection: 'row',
@@ -545,48 +625,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               marginTop:'15px',
               width: '100%'
             }}>
-              <button
-                onMouseEnter={() => this.setState({ b1_hover: true })}
-                onMouseLeave={() => this.setState({ b1_hover: false })}
-                onClick={() => this.handleClicked()}
-                style={{
-                  marginBottom: '20px',
-                  backgroundColor: this.state.b1_hover ? '#676767' : '#545454',
-                  color: 'white',
-                  padding: '10px',
-                  paddingLeft: '15px',
-                  paddingRight: '15px',
-                  borderRadius: '6px',
-                  fontSize: '20px',
-                  fontFamily: 'monospace',
-                  marginRight: '10px',
-                  borderColor: 'goldenrod',
-                  borderWidth: '3px'
-                }}
-              >
-                Set File
-              </button>
-              <button
-                onMouseEnter={() => this.setState({ b2_hover: true })}
-                onMouseLeave={() => this.setState({ b2_hover: false })}
-                onClick={() => { if (this.state.algorithmRunning) { this.stopRunning() } else { this.handleClicked() } }}
-                style={{
-                  marginBottom: '20px',
-                  backgroundColor: this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod' : '#545454',
-                  color: 'white',
-                  padding: '10px',
-                  paddingLeft: '15px',
-                  paddingRight: '15px',
-                  borderRadius: '6px',
-                  fontSize: '20px',
-                  fontFamily: 'monospace',
-                  marginRight: 'auto', // aligns the button to the leftmost side
-                  borderColor: 'goldenrod',
-                  borderWidth: '3px'
-                }}
-              >
-                {this.state.algorithmRunning ? (this.state.generatingSolution ? 'Generating Base Solution' : 'Running... Press Again To Stop') : 'Find Optimal Solution'}
-              </button>
               <div style={{flexDirection:'column', flex:1,display:'flex'}}>
               {/* <label
                 style={{
@@ -619,11 +657,151 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
 
               </div>
-              <div style={{width:'100%', height:'60vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
+              <div style={{width:'100%', height:'68vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
                 <AnimatedBarChart data={this.state.data} options={this.state.options} />
               </div>
             </div>
+            <div style={{
+                backgroundColor: '#454545',
+                width: '20vw', // Adjust the width as needed
+                height: '100%', // Occupy full height of the parent
+                borderTopRightRadius: '6px',
+                borderBottomRightRadius: '6px',
+                borderColor:'goldenrod',
+                borderLeftWidth:'3px',
+                display:'flex',
+                flexDirection:'column',
+                justifyContent:'start',
+                alignItems:'start',
+                padding:'10px'
+            }}>
+{/* Hide the input element visually */}
+<input
+    type="file"
+    onChange={this.handleFileChange}
+    id="fileInput" // Add an ID for easier reference
+    style={{ display: 'none' }} // Hide the input element
+/>
+
+{/* Use the button to trigger file selection */}
+<button
+    onMouseEnter={() => this.setState({ b5_hover: true })}
+    onMouseLeave={() => this.setState({ b5_hover: false })}
+    onClick={this.handleFileButtonClick} // Use a different click handler for the button
+    disabled={this.state.algorithmRunning}
+    style={{
+        alignSelf: 'center',
+        outline: 'none',
+        textAlign: 'center',
+        marginTop: '10px',
+        marginBottom: '10px',
+        backgroundColor: this.state.b5_hover ? '#676767' : '#545454',
+        color: 'white',
+        padding: '10px',
+        paddingLeft: '15px',
+        paddingRight: '15px',
+        borderRadius: '6px',
+        fontSize: '20px',
+        fontFamily: 'monospace',
+        borderColor: 'goldenrod',
+        borderWidth: '3px'
+    }}
+>
+    Set Problem Data File
+</button>
+
+                <button
+                disabled={this.state.algorithmRunning}
+                onMouseEnter={() => this.setState({ b3_hover: true })}
+                onMouseLeave={() => this.setState({ b3_hover: false })}
+                onClick={() => this.setState({acceptOriginal:!this.state.acceptOriginal})}
+                style={{
+                  alignSelf:'center',
+                  marginBottom: '10px',
+                  backgroundColor: this.state.acceptOriginal ? 'goldenrod' : (this.state.b3_hover ? '#676767' : '#545454'),
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                {`Accept Original (${this.state.acceptOriginal ? `On` : `Off`})`}
+              </button>
+              <button
+                onMouseEnter={() => this.setState({ b4_hover: true })}
+                onMouseLeave={() => this.setState({ b4_hover: false })}
+                onClick={() => this.state.selectorMethod === 'Random' ?  this.setState({selectorMethod:'Min'}) : (this.state.selectorMethod === 'Min' ?  this.setState({selectorMethod:'Max'}) : this.setState({selectorMethod:'Random'}))}
+                disabled={this.state.algorithmRunning}
+                style={{
+                  alignSelf:'center',
+                  marginBottom: '10px',
+                  backgroundColor: this.state.b4_hover ? '#676767' : '#545454',
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                {`Selector (${this.state.selectorMethod})`}
+              </button>
+              <input
+                onChange={(e)=>this.setState({maxIterations: parseInt(e.currentTarget.value)})}
+                placeholder="Runtime (s)"
+                disabled={this.state.algorithmRunning}
+                value={this.state.maxIterations}
+                style={{
+                  alignSelf:'center',
+                  outline:'none',
+                  textAlign:'center',
+                  marginBottom: '10px',
+                  backgroundColor: this.state.b1_hover ? '#676767' : '#545454',
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}></input>
+                              <button
+                onMouseEnter={() => this.setState({ b2_hover: true })}
+                onMouseLeave={() => this.setState({ b2_hover: false })}
+                onClick={() => { if (this.state.algorithmRunning) { this.stopRunning() } else { this.handleClicked() } }}
+                style={{
+                  backgroundColor: this.state.b2_hover || this.state.algorithmRunning === true ? 'goldenrod' : '#545454',
+                  alignSelf:'center',
+                  outline:'none',
+                  bottom:'70px',
+                  position:'absolute',
+                  textAlign:'center',
+                  color: 'white',
+                  padding: '10px',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                {this.state.algorithmRunning ? (this.state.generatingSolution ? 'Generating Solution' : 'Press To Stop') : 'Find Optimal Solution'}
+              </button>
             </div>
+          </div>
+
             
       </div>
     );
