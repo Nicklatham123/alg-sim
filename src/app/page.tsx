@@ -85,6 +85,11 @@ interface HomePageState {
   selectorMethod:string;
   maxIterations:number;
   selectedFile:any;
+  currentStats:{
+    waste:number,
+    avgProjectSatisfaction:number,
+    numActivated:number,
+  };
 }
 
 
@@ -155,7 +160,12 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       acceptOriginal:false,
       selectorMethod:'Random',
       maxIterations:3,
-      selectedFile:null
+      selectedFile:null,
+      currentStats:{
+        waste:0,
+        avgProjectSatisfaction:0,
+        numActivated:0,
+      }
       
     };
     
@@ -363,6 +373,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               },
               currentPerformance:Math.round(bestPerformance)
           });
+      this.analysePerformance(bestSolution)
+        
 
         // Delay to visualize each iteration (optional)
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -378,7 +390,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
     console.log(bestSolution)
-    this.analysePerformance(bestSolution)
     this.setState({ algorithmRunning: false });
 }
 
@@ -468,7 +479,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   evaluateSolution(solution:Solution){
     var sumPerformance = 0
     for (const project of solution){
-      sumPerformance += this.calculatePerformance(project)
+      sumPerformance += this.evaluateProject(project)
     }
     return sumPerformance
   }
@@ -478,16 +489,16 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     var sumPerformance = 0
     var requirementsMet = true
     for (var i = 0; i<numberOfResources;i++){
-      if (project.allocated[i] < project.required[i]){
+      if (project.allocated[i] < project.required[i]){ 
         requirementsMet = false
       }
     }
-    
-    if (requirementsMet == true){    
-        sumPerformance += this.calculatePerformance(project)
+    if (requirementsMet){
+      sumPerformance += this.calculatePerformance(project)
     }else{
-        // sumPerformance -= this.calculatePerformance(project)
+      sumPerformance -= this.calculatePerformance(project)
     }
+
     return sumPerformance
   }
 
@@ -553,6 +564,11 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     console.log(`Sum Return: ${this.evaluateSolution(solution)}`)
     console.log(`Avg Project Satisfaction (Of Activated): ${avgProjectSatisfaction}`)
     console.log(`Wasted Resources: ${waste}`)
+    this.setState({currentStats:{
+      waste:waste,
+      avgProjectSatisfaction:avgProjectSatisfaction,
+      numActivated:numActivated
+    }})
     return [sumPerformance, avgProjectSatisfaction, waste]
   }
 
@@ -623,9 +639,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               justifyContent: 'start',
               marginLeft: '15px',
               marginTop:'15px',
-              width: '100%'
+              width: '100%',
             }}>
-              <div style={{flexDirection:'column', flex:1,display:'flex'}}>
+              <div style={{flexDirection:'column', flex:1,display:'flex', position:'absolute', right:'25vw'}}>
               {/* <label
                 style={{
                   alignSelf: 'center',
@@ -645,19 +661,44 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
-                  marginRight : '60px'
+                  marginRight : '40px'
                 }}
               >
-                {`Optimal Performance: ${this.state.currentPerformance}`}
+                {`Best Solution Fitness: ${this.state.currentPerformance}`}
               </label>
+              <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '40px'}}>{`Wasted Resources: ${this.state.currentStats.waste}`}</label>
+              <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '40px'}}>{`Num Activated: ${this.state.currentStats.numActivated}`}</label>
+              <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '40px'}}>{`Average Project Satisfaction: ${Math.round(this.state.currentStats.avgProjectSatisfaction * 100) / 100}`}</label>
               </div>
+
 
             </div>
 
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
 
               </div>
-              <div style={{width:'100%', height:'68vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
+              <div style={{width:'100%', height:'72vh',flex:1, display:"flex", justifyContent:'center', marginTop:'25px'}}>
                 <AnimatedBarChart data={this.state.data} options={this.state.options} />
               </div>
             </div>
@@ -675,40 +716,40 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 alignItems:'start',
                 padding:'10px'
             }}>
-{/* Hide the input element visually */}
-<input
-    type="file"
-    onChange={this.handleFileChange}
-    id="fileInput" // Add an ID for easier reference
-    style={{ display: 'none' }} // Hide the input element
-/>
+            {/* Hide the input element visually */}
+            <input
+                type="file"
+                onChange={this.handleFileChange}
+                id="fileInput" // Add an ID for easier reference
+                style={{ display: 'none' }} // Hide the input element
+            />
 
-{/* Use the button to trigger file selection */}
-<button
-    onMouseEnter={() => this.setState({ b5_hover: true })}
-    onMouseLeave={() => this.setState({ b5_hover: false })}
-    onClick={this.handleFileButtonClick} // Use a different click handler for the button
-    disabled={this.state.algorithmRunning}
-    style={{
-        alignSelf: 'center',
-        outline: 'none',
-        textAlign: 'center',
-        marginTop: '10px',
-        marginBottom: '10px',
-        backgroundColor: this.state.b5_hover ? '#676767' : '#545454',
-        color: 'white',
-        padding: '10px',
-        paddingLeft: '15px',
-        paddingRight: '15px',
-        borderRadius: '6px',
-        fontSize: '20px',
-        fontFamily: 'monospace',
-        borderColor: 'goldenrod',
-        borderWidth: '3px'
-    }}
->
-    Set Problem Data File
-</button>
+            {/* Use the button to trigger file selection */}
+            <button
+                onMouseEnter={() => this.setState({ b5_hover: true })}
+                onMouseLeave={() => this.setState({ b5_hover: false })}
+                onClick={this.handleFileButtonClick} // Use a different click handler for the button
+                disabled={this.state.algorithmRunning}
+                style={{
+                    alignSelf: 'center',
+                    outline: 'none',
+                    textAlign: 'center',
+                    marginTop: '10px',
+                    marginBottom: '10px',
+                    backgroundColor: this.state.b5_hover ? '#676767' : '#545454',
+                    color: 'white',
+                    padding: '10px',
+                    paddingLeft: '15px',
+                    paddingRight: '15px',
+                    borderRadius: '6px',
+                    fontSize: '20px',
+                    fontFamily: 'monospace',
+                    borderColor: 'goldenrod',
+                    borderWidth: '3px'
+                }}
+            >
+                Set Problem Data File
+            </button>
 
                 <button
                 disabled={this.state.algorithmRunning}
@@ -755,8 +796,10 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 {`Selector (${this.state.selectorMethod})`}
               </button>
               <input
+              type="number"
                 onChange={(e)=>this.setState({maxIterations: parseInt(e.currentTarget.value)})}
                 placeholder="Runtime (s)"
+                max={30}
                 disabled={this.state.algorithmRunning}
                 value={this.state.maxIterations}
                 style={{
