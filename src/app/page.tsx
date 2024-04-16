@@ -617,7 +617,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             }
           }
           >
-            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold', textAlign:'center'}}>Altruistic Trade Optimisation (ATO) Demo</label>
+            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold', textAlign:'center', marginTop:'20px'}}>Altruistic Trade Optimisation (ATO) Demo</label>
             <label style={{color:'white', fontSize:'20px', fontFamily:'monospace', textAlign:'center'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
           <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex', flex:1, flexDirection:'row'}}></div>
