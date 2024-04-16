@@ -613,8 +613,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             }
           }
           >
-            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Altruistic Trade Optimisation (ATO) Demo</label>
-            <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
+            <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold', textAlign:'center'}}>Altruistic Trade Optimisation (ATO) Demo</label>
+            <label style={{color:'white', fontSize:'20px', fontFamily:'monospace', textAlign:'center'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
           <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex', flex:1, flexDirection:'row'}}></div>
           <div style={{
@@ -743,6 +743,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                     paddingRight: '15px',
                     borderRadius: '6px',
                     fontSize: '20px',
+                    maxWidth:'18vw',
                     fontFamily: 'monospace',
                     borderColor: 'goldenrod',
                     borderWidth: '3px'
@@ -788,6 +789,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingRight: '15px',
                   borderRadius: '6px',
                   fontSize: '20px',
+                  maxWidth:'18vw',
                   fontFamily: 'monospace',
                   borderColor: 'goldenrod',
                   borderWidth: '3px'
@@ -800,6 +802,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 onChange={(e)=>this.setState({maxIterations: parseInt(e.currentTarget.value)})}
                 placeholder="Runtime (s)"
                 max={30}
+                maxLength={2}
                 disabled={this.state.algorithmRunning}
                 value={this.state.maxIterations}
                 style={{
@@ -809,16 +812,14 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   marginBottom: '10px',
                   backgroundColor: this.state.b1_hover ? '#676767' : '#545454',
                   color: 'white',
-                  padding: '10px',
-                  paddingLeft: '15px',
-                  paddingRight: '15px',
                   borderRadius: '6px',
+                  maxWidth:'18vw',
                   fontSize: '20px',
                   fontFamily: 'monospace',
                   borderColor: 'goldenrod',
                   borderWidth: '3px'
                 }}></input>
-                              <button
+                  <button
                 onMouseEnter={() => this.setState({ b2_hover: true })}
                 onMouseLeave={() => this.setState({ b2_hover: false })}
                 onClick={() => { if (this.state.algorithmRunning) { this.stopRunning() } else { this.handleClicked() } }}
@@ -833,6 +834,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   padding: '10px',
                   paddingLeft: '15px',
                   paddingRight: '15px',
+                  maxWidth:'18vw',
                   borderRadius: '6px',
                   fontSize: '20px',
                   fontFamily: 'monospace',
