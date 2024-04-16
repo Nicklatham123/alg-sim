@@ -75,6 +75,8 @@ interface HomePageState {
   currentPerformance: number;
   stop: boolean;
   firstRun:boolean;
+  iteration:number;
+  generatingSolution:boolean;
 }
 
 
@@ -136,7 +138,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       currentSolution:[],
       currentPerformance:0,
       stop:false,
-      firstRun:true
+      firstRun:true,
+      iteration:0,
+      generatingSolution:false,
       
     };
     
@@ -149,7 +153,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
   
   fetchData(){
-    fetch('/project_data.json')
+    fetch('/project_data_5499.json')
     .then(response => response.json())
     .then(data => {
       // Extract available resources and projects from the data
@@ -170,8 +174,38 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
 
   handleClicked(){
-    this.setState({stop:false})
-    this.runATO(200000);
+    this.fetchData();
+    const valid = this.checkProblem();
+    if (valid){
+      this.setState({stop:false})
+      this.runATO(10000);
+    }else{
+      console.log('Invalid')
+    }
+
+  }
+
+  checkProblem(){
+    var problem:Solution = this.state.projects
+    var availableResources = this.state.availableResources
+
+    var sumResources = Array(availableResources.length).fill(0);
+
+    for (const project of problem){
+      for (var i = 0; i<availableResources.length;i++){
+        sumResources[i] += project.optimal[i]
+      }
+    }
+
+    var valid = true
+    for (var i=0;i<availableResources.length;i++){
+      if (sumResources[i] < availableResources[i]){
+        console.log('invalid: ' + sumResources[i] + ' - ' + availableResources[i])
+        valid = false
+      }
+    }
+    return valid
+
   }
 
   generateRandomSolution = () => {
@@ -179,23 +213,31 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     var availableResources = this.state.availableResources
     for (var i = 0; i<availableResources.length;i++){
       while (availableResources[i] > 0){
-        console.log('Generating Random Solution')
+        this.setState({generatingSolution:true})
         var random_index = Math.floor(Math.random() * solution.length)
-          if (solution[random_index].allocated[i] < solution[random_index].optimal[i]){
-            solution[random_index].allocated[i] += 1;
-            availableResources[i] -= 1
+        if (solution[random_index].allocated[i] < solution[random_index].optimal[i]){
+          var amount = solution[random_index].optimal[i] - solution[random_index].allocated[i]
+          if (amount <= availableResources[i]){
+            solution[random_index].allocated[i] += amount;
+            availableResources[i] -= amount;
           }else{
-            console.error('allocation failed - over optimal constraint')
+            solution[random_index].allocated[i] += availableResources[i];
+            availableResources[i] -= availableResources[i];
           }
+
+        }else{
+          // console.error('allocation failed - over optimal constraint')
         }
-        console.log('Random Solution Generated')
+      }
     }
+    this.setState({generatingSolution:false, currentPerformance:this.evaluateSolution(solution)})
     return solution
   }
 
   async runATO(timeoutCount: number) {
     this.setState({ algorithmRunning: true, currentSolution:[], currentPerformance:0});
-      var solution:Solution = this.generateRandomSolution();
+
+    var solution:Solution = this.generateRandomSolution();
     // if (this.state.firstRun){
     // }else{
     //   solution = this.state.currentSolution;
@@ -207,15 +249,17 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     const numRandomAtoms = 2;
     const solutionLength = solution.length;
 
-    // const timeout = setTimeout(() => {
-    //   // Set the flag to stop the loop after 15 seconds
-    //   this.setState({ stop: true });
-    // }, timeoutCount);
+    const timeout = setTimeout(() => {
+      // Set the flag to stop the loop after 15 seconds
+      this.setState({ stop: true });
+    }, timeoutCount);
+    var iterations = 0;
+    while (!this.state.stop){
+    // for (var i = 0; i< timeoutCount;i++){
+        // iterations ++;
+        // this.setState({iteration:iterations})
 
-    // while (!this.state.stop){
-    for (var i = 0; i< timeoutCount;i++){
         // Select 2 Random Atoms
-        
         var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
         
         for (let i = solutionLength - 1; i > 0; i--) {
@@ -242,39 +286,39 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             console.log(bestPerformance)
         
 
-        // Update chart data
-        var projects = bestSolution.map(p => p.project_id);
-        var resourceAllocations = bestSolution.map(p => p.allocated);
+          // Update chart data
+          var projects = bestSolution.map(p => p.project_id);
+          var resourceAllocations = bestSolution.map(p => p.allocated);
 
-        var projectLabels = [];
-        var projectResourceAllocations = [];
+          var projectLabels = [];
+          var projectResourceAllocations = [];
 
-        for (let j = 0; j < projects.length; j++) {
-          const projectLabelPrefix = `Project${j}`;
-      
-          // Push resource labels and allocations for each project
-          for (let k = 0; k < 3; k++) {
-              projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
-              projectResourceAllocations.push(resourceAllocations[j][k]);
+          for (let j = 0; j < projects.length; j++) {
+            const projectLabelPrefix = `Project${j}`;
+        
+            // Push resource labels and allocations for each project
+            for (let k = 0; k < 3; k++) {
+                projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
+                projectResourceAllocations.push(resourceAllocations[j][k]);
+            }
           }
-        }
-      
-        // Update chart data in the state
-        this.setState({
-            data: {
-                labels: projectLabels,
-                datasets: [
-                    {
-                        label: "",
-                        data: projectResourceAllocations,
-                        backgroundColor: `goldenrod`,
-                        borderColor: `black`,
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            currentPerformance:Math.round(bestPerformance)
-        });
+        
+          // Update chart data in the state
+          this.setState({
+              data: {
+                  labels: projectLabels,
+                  datasets: [
+                      {
+                          label: "",
+                          data: projectResourceAllocations,
+                          backgroundColor: `goldenrod`,
+                          borderColor: `orange`,
+                          borderWidth: 1,
+                      },
+                  ],
+              },
+              currentPerformance:Math.round(bestPerformance)
+          });
 
         // Delay to visualize each iteration (optional)
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -283,13 +327,14 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         this.setState({algorithmRunning:false, stop:false})
         return
       }
+
     }
     // clearTimeout(timeout);
 
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
     console.log(bestSolution)
-
+    this.analysePerformance(bestSolution)
     this.setState({ algorithmRunning: false });
 }
 
@@ -342,7 +387,10 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       }
     }
     const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
-
+    const t0Score = this.evaluateProject(atoms[0]) + this.evaluateProject(atoms[1]);
+    // if (t0Score > t1Score && t0Score > t2Score){
+    //   return atoms
+    // }
     if (t1Score > t2Score){
       return t1Atoms
     }else {
@@ -359,22 +407,20 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
 
   evaluateProject(project:Project){
-    var numberOfResources = project.required.length
+    var numberOfResources = this.state.availableResources.length
     var sumPerformance = 0
     var requirementsMet = true
     for (var i = 0; i<numberOfResources;i++){
-        if (project.allocated[i] < project.required[i]){
-          requirementsMet = false
-          sumPerformance += this.calculatePerformance(project)
-        }else{
-          sumPerformance -= this.calculatePerformance(project)
-        }
+      if (project.allocated[i] < project.required[i]){
+        requirementsMet = false
       }
-    // if (requirementsMet){    
-    //     sumPerformance += this.calculatePerformance(project)
-    // }else{
-        
-    // }
+    }
+    
+    if (requirementsMet == true){    
+        sumPerformance += this.calculatePerformance(project)
+    }else{
+        // sumPerformance -= this.calculatePerformance(project)
+    }
     return sumPerformance
   }
 
@@ -396,6 +442,51 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       
       // Return the sum
       return sum;
+  }
+
+  analysePerformance(solution){
+    var numActivated = 0
+    var sumPerformance = 0
+    var sumResourcesUsed = Array(this.state.availableResources.length).fill(0);
+    var sumProjectSatisfaction = 0
+    var numOverOptimal = 0
+    var waste = 0
+    console.log('ar: ' + this.state.availableResources)
+    for (const project of solution){
+        var requirementsMet = true
+        var projectSatisfaction = 0
+        for (var i=0;i<project.allocated.length;i++){
+            sumResourcesUsed[i] += project.allocated[i]
+            // project_satisfaction += (project.resources[i] * project.performance_weights[i]) / (project.optimal_resources[i] * project.performance_weights[i])
+            
+            // Negating Performance If A Resource Requirement is not met
+            if (project.allocated[i] < project.required[i]){
+              requirementsMet = false
+              waste += project.allocated[i]
+            }else{
+              projectSatisfaction += (project.allocated[i] * project.weights[i]) / (project.optimal[i] * project.weights[i])
+            }
+            // Optimal resource allocation Check
+            if (project.allocated[i] > project.optimal[i]){
+              numOverOptimal += 1
+            }
+        }
+        if (requirementsMet == true){
+          numActivated += 1
+          sumProjectSatisfaction += projectSatisfaction
+        }
+      }
+    console.log(sumProjectSatisfaction)
+    const avgProjectSatisfaction = sumProjectSatisfaction/(numActivated*this.state.availableResources.length)
+    console.log(`Over Optimal: ${numOverOptimal}`)
+    console.log(sumResourcesUsed)
+    console.log(this.state.availableResources)
+    console.log(`Resources Used Constraint Check: ${this.state.availableResources.every((element, index) => element === sumResourcesUsed[index])}, Over Optimal Constraint Check: ${numOverOptimal == 0}`)
+    console.log(`Activated Projects: ${numActivated}/${(solution.length)}`)
+    console.log(`Sum Return: ${this.evaluateSolution(solution)}`)
+    console.log(`Avg Project Satisfaction (Of Activated): ${avgProjectSatisfaction}`)
+    console.log(`Wasted Resources: ${waste}`)
+    return [sumPerformance, avgProjectSatisfaction, waste]
   }
 
   getSegments(a:number, n:number) {
@@ -431,13 +522,13 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             <label style={{color:'white', fontSize:'30px', fontFamily:'monospace', fontWeight:'bold'}}>Altruistic Trade Optimisation (ATO) Demo</label>
             <label style={{color:'white', fontSize:'20px', fontFamily:'monospace'}}>A Nature-Inspired Algorithm for Resource Allocation in Project Management</label>
           </div>
-          <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px'}}></div>
+          <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex'}}></div>
           <div style={{
-                backgroundColor:'#343434',
+                backgroundColor:'#787878',
                 width:'86vw',
                 height:'80vh',
                 display:'flex',
-                flex:1,
+                flex:3,
                 alignItems:'start',
                 justifyContent:'center',
                 flexDirection:'row',
@@ -446,19 +537,12 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 borderRadius:'6px'
           }}>
             <div style={{alignItems:'center', justifyContent:'start',flexDirection:'column', display:'block', flex:1, marginTop:'10', height:'100%', width:'100%'}}>
-              <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',marginBottom:'15px'}}>
-                {/* <button onMouseEnter={()=>this.setState({b4_hover:true})} onMouseLeave={()=>this.setState({b4_hover:false})} onClick={()=>this.setState({selected_alg:'ga'})} style={{backgroundColor:this.state.b4_hover || this.state.selected_alg === 'ga' ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Genetic Algorithm
-                
-                </button>
-                <button onMouseEnter={()=>this.setState({b5_hover:true})} onMouseLeave={()=>this.setState({b5_hover:false})} onClick={()=>this.setState({selected_alg:'gga'})} style={{backgroundColor:this.state.b5_hover || this.state.selected_alg === 'gga' ? 'goldenrod':'#545454',color:'white', padding:'10px', paddingLeft:'15px', paddingRight:'15px',borderRadius:'6px', fontSize:'20px', fontFamily:'monospace', marginRight:'10px', borderColor:'goldenrod', borderWidth:'3px'}}>Altruistic Algorithm
-              
-              </button> */}
-                </div>
-                <div style={{
+              <div style={{
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'start',
               marginLeft: '15px',
+              marginTop:'15px',
               width: '100%'
             }}>
               <button
@@ -501,8 +585,21 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   borderWidth: '3px'
                 }}
               >
-                {this.state.algorithmRunning ? 'Running... Press Again To Stop' : 'Find Optimal Solution'}
+                {this.state.algorithmRunning ? (this.state.generatingSolution ? 'Generating Base Solution' : 'Running... Press Again To Stop') : 'Find Optimal Solution'}
               </button>
+              <div style={{flexDirection:'column', flex:1,display:'flex'}}>
+              {/* <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '20px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '60px'
+                }}
+              >
+                {`Iteration: ${this.state.iteration+1}`}
+              </label> */}
               <label
                 style={{
                   alignSelf: 'center',
@@ -515,6 +612,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               >
                 {`Optimal Performance: ${this.state.currentPerformance}`}
               </label>
+              </div>
+
             </div>
 
               <div style={{display:'flex', flex:1,flexDirection:'row', justifyContent:'center',bottom:'15px', position:'unset'}}>
@@ -525,6 +624,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               </div>
             </div>
             </div>
+            
       </div>
     );
   }

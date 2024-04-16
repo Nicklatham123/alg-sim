@@ -1,0 +1,1161 @@
+{
+    "meta": {
+        "available_resources": [
+            902,
+            1106,
+            808
+        ]
+    },
+    "projects": [
+        {
+            "project_id": 0,
+            "required": [
+                1,
+                1,
+                1
+            ],
+            "optimal": [
+                20,
+                2,
+                3
+            ],
+            "weights": [
+                0.8,
+                0.1,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 1,
+            "required": [
+                1,
+                10,
+                7
+            ],
+            "optimal": [
+                14,
+                23,
+                20
+            ],
+            "weights": [
+                0.6,
+                0.2,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 2,
+            "required": [
+                11,
+                4,
+                10
+            ],
+            "optimal": [
+                35,
+                6,
+                19
+            ],
+            "weights": [
+                0.9,
+                0.1,
+                0.6
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 3,
+            "required": [
+                15,
+                13,
+                6
+            ],
+            "optimal": [
+                25,
+                24,
+                24
+            ],
+            "weights": [
+                1.0,
+                0.3,
+                0.3
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 4,
+            "required": [
+                14,
+                14,
+                1
+            ],
+            "optimal": [
+                41,
+                39,
+                18
+            ],
+            "weights": [
+                0.1,
+                0.8,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 5,
+            "required": [
+                23,
+                4,
+                2
+            ],
+            "optimal": [
+                42,
+                41,
+                17
+            ],
+            "weights": [
+                0.9,
+                0.6,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 6,
+            "required": [
+                3,
+                1,
+                1
+            ],
+            "optimal": [
+                21,
+                46,
+                1
+            ],
+            "weights": [
+                1.0,
+                0.5,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 7,
+            "required": [
+                2,
+                12,
+                6
+            ],
+            "optimal": [
+                8,
+                49,
+                48
+            ],
+            "weights": [
+                0.9,
+                0.2,
+                0.9
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 8,
+            "required": [
+                11,
+                18,
+                9
+            ],
+            "optimal": [
+                48,
+                34,
+                16
+            ],
+            "weights": [
+                0.9,
+                0.2,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 9,
+            "required": [
+                4,
+                13,
+                1
+            ],
+            "optimal": [
+                7,
+                43,
+                8
+            ],
+            "weights": [
+                0.9,
+                0.8,
+                0.3
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 10,
+            "required": [
+                16,
+                3,
+                17
+            ],
+            "optimal": [
+                46,
+                45,
+                43
+            ],
+            "weights": [
+                0.3,
+                1.0,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 11,
+            "required": [
+                1,
+                3,
+                1
+            ],
+            "optimal": [
+                5,
+                10,
+                48
+            ],
+            "weights": [
+                0.3,
+                0.5,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 12,
+            "required": [
+                2,
+                1,
+                12
+            ],
+            "optimal": [
+                7,
+                8,
+                31
+            ],
+            "weights": [
+                0.7,
+                0.2,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 13,
+            "required": [
+                8,
+                1,
+                22
+            ],
+            "optimal": [
+                25,
+                4,
+                39
+            ],
+            "weights": [
+                0.5,
+                0.8,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 14,
+            "required": [
+                1,
+                6,
+                10
+            ],
+            "optimal": [
+                3,
+                14,
+                18
+            ],
+            "weights": [
+                0.7,
+                0.3,
+                0.9
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 15,
+            "required": [
+                2,
+                4,
+                5
+            ],
+            "optimal": [
+                10,
+                8,
+                20
+            ],
+            "weights": [
+                0.8,
+                0.9,
+                0.1
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 16,
+            "required": [
+                5,
+                9,
+                11
+            ],
+            "optimal": [
+                29,
+                16,
+                28
+            ],
+            "weights": [
+                1.0,
+                0.2,
+                0.5
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 17,
+            "required": [
+                7,
+                2,
+                11
+            ],
+            "optimal": [
+                30,
+                36,
+                21
+            ],
+            "weights": [
+                0.6,
+                0.6,
+                0.5
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 18,
+            "required": [
+                2,
+                8,
+                1
+            ],
+            "optimal": [
+                24,
+                34,
+                2
+            ],
+            "weights": [
+                0.4,
+                0.9,
+                0.1
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 19,
+            "required": [
+                5,
+                7,
+                12
+            ],
+            "optimal": [
+                38,
+                34,
+                34
+            ],
+            "weights": [
+                0.6,
+                0.7,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 20,
+            "required": [
+                4,
+                4,
+                5
+            ],
+            "optimal": [
+                21,
+                13,
+                26
+            ],
+            "weights": [
+                0.8,
+                0.2,
+                0.2
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 21,
+            "required": [
+                3,
+                5,
+                1
+            ],
+            "optimal": [
+                46,
+                33,
+                5
+            ],
+            "weights": [
+                0.5,
+                0.6,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 22,
+            "required": [
+                3,
+                1,
+                6
+            ],
+            "optimal": [
+                7,
+                2,
+                34
+            ],
+            "weights": [
+                0.5,
+                0.6,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 23,
+            "required": [
+                6,
+                16,
+                9
+            ],
+            "optimal": [
+                31,
+                28,
+                34
+            ],
+            "weights": [
+                0.4,
+                0.9,
+                0.6
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 24,
+            "required": [
+                3,
+                1,
+                14
+            ],
+            "optimal": [
+                30,
+                25,
+                43
+            ],
+            "weights": [
+                0.6,
+                0.9,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 25,
+            "required": [
+                2,
+                17,
+                3
+            ],
+            "optimal": [
+                15,
+                45,
+                16
+            ],
+            "weights": [
+                0.2,
+                0.5,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 26,
+            "required": [
+                7,
+                3,
+                1
+            ],
+            "optimal": [
+                11,
+                21,
+                2
+            ],
+            "weights": [
+                0.4,
+                0.2,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 27,
+            "required": [
+                10,
+                6,
+                1
+            ],
+            "optimal": [
+                48,
+                29,
+                49
+            ],
+            "weights": [
+                0.9,
+                0.9,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 28,
+            "required": [
+                7,
+                3,
+                2
+            ],
+            "optimal": [
+                40,
+                20,
+                10
+            ],
+            "weights": [
+                0.2,
+                0.6,
+                0.5
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 29,
+            "required": [
+                5,
+                10,
+                1
+            ],
+            "optimal": [
+                46,
+                40,
+                2
+            ],
+            "weights": [
+                0.9,
+                0.8,
+                0.2
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 30,
+            "required": [
+                3,
+                1,
+                16
+            ],
+            "optimal": [
+                7,
+                31,
+                38
+            ],
+            "weights": [
+                0.7,
+                0.2,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 31,
+            "required": [
+                1,
+                1,
+                22
+            ],
+            "optimal": [
+                1,
+                15,
+                39
+            ],
+            "weights": [
+                0.3,
+                0.3,
+                0.9
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 32,
+            "required": [
+                16,
+                14,
+                4
+            ],
+            "optimal": [
+                38,
+                38,
+                14
+            ],
+            "weights": [
+                0.6,
+                0.3,
+                1.0
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 33,
+            "required": [
+                1,
+                18,
+                17
+            ],
+            "optimal": [
+                1,
+                30,
+                46
+            ],
+            "weights": [
+                0.2,
+                0.4,
+                0.6
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 34,
+            "required": [
+                6,
+                16,
+                10
+            ],
+            "optimal": [
+                20,
+                37,
+                39
+            ],
+            "weights": [
+                0.9,
+                0.3,
+                0.5
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 35,
+            "required": [
+                8,
+                7,
+                7
+            ],
+            "optimal": [
+                25,
+                46,
+                11
+            ],
+            "weights": [
+                0.8,
+                0.5,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 36,
+            "required": [
+                8,
+                11,
+                3
+            ],
+            "optimal": [
+                32,
+                24,
+                11
+            ],
+            "weights": [
+                1.0,
+                0.3,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 37,
+            "required": [
+                9,
+                4,
+                11
+            ],
+            "optimal": [
+                29,
+                36,
+                18
+            ],
+            "weights": [
+                0.7,
+                0.9,
+                0.1
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 38,
+            "required": [
+                4,
+                15,
+                9
+            ],
+            "optimal": [
+                6,
+                28,
+                43
+            ],
+            "weights": [
+                0.3,
+                0.5,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 39,
+            "required": [
+                12,
+                2,
+                2
+            ],
+            "optimal": [
+                37,
+                5,
+                35
+            ],
+            "weights": [
+                0.7,
+                0.7,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 40,
+            "required": [
+                12,
+                1,
+                4
+            ],
+            "optimal": [
+                28,
+                2,
+                6
+            ],
+            "weights": [
+                0.8,
+                0.7,
+                0.1
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 41,
+            "required": [
+                1,
+                3,
+                7
+            ],
+            "optimal": [
+                1,
+                17,
+                49
+            ],
+            "weights": [
+                0.9,
+                0.4,
+                1.0
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 42,
+            "required": [
+                5,
+                12,
+                13
+            ],
+            "optimal": [
+                14,
+                40,
+                35
+            ],
+            "weights": [
+                0.3,
+                0.3,
+                0.9
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 43,
+            "required": [
+                17,
+                1,
+                14
+            ],
+            "optimal": [
+                30,
+                2,
+                33
+            ],
+            "weights": [
+                0.8,
+                0.7,
+                0.9
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 44,
+            "required": [
+                2,
+                2,
+                15
+            ],
+            "optimal": [
+                17,
+                26,
+                37
+            ],
+            "weights": [
+                0.7,
+                0.8,
+                0.7
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 45,
+            "required": [
+                14,
+                12,
+                1
+            ],
+            "optimal": [
+                31,
+                31,
+                1
+            ],
+            "weights": [
+                1.0,
+                0.9,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 46,
+            "required": [
+                11,
+                19,
+                17
+            ],
+            "optimal": [
+                43,
+                31,
+                43
+            ],
+            "weights": [
+                0.4,
+                0.2,
+                0.8
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 47,
+            "required": [
+                2,
+                6,
+                7
+            ],
+            "optimal": [
+                5,
+                14,
+                14
+            ],
+            "weights": [
+                0.8,
+                1.0,
+                0.4
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 48,
+            "required": [
+                13,
+                9,
+                14
+            ],
+            "optimal": [
+                28,
+                17,
+                40
+            ],
+            "weights": [
+                0.5,
+                0.4,
+                1.0
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "project_id": 49,
+            "required": [
+                1,
+                6,
+                10
+            ],
+            "optimal": [
+                4,
+                31,
+                21
+            ],
+            "weights": [
+                0.1,
+                0.4,
+                0.6
+            ],
+            "allocated": [
+                0,
+                0,
+                0
+            ]
+        }
+    ]
+}
