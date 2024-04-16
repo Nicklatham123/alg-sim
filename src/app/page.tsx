@@ -851,6 +851,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingLeft: '15px',
                   paddingRight: '15px',
                   width:'18vw',
+                  
                   maxWidth:'18vw',
                   borderRadius: '6px',
                   fontSize: '15px',
