@@ -657,7 +657,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               <label
                 style={{
                   alignSelf: 'center',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
@@ -669,7 +669,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               <label
                 style={{
                   alignSelf: 'center',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
@@ -677,7 +677,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               <label
                 style={{
                   alignSelf: 'center',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
@@ -685,7 +685,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               <label
                 style={{
                   alignSelf: 'center',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   color: 'white',
                   marginLeft: 'auto',
@@ -742,7 +742,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                     paddingLeft: '15px',
                     paddingRight: '15px',
                     borderRadius: '6px',
-                    fontSize: '20px',
+                    fontSize: '15px',
                     maxWidth:'18vw',
                     fontFamily: 'monospace',
                     borderColor: 'goldenrod',
@@ -766,7 +766,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingLeft: '15px',
                   paddingRight: '15px',
                   borderRadius: '6px',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   borderColor: 'goldenrod',
                   borderWidth: '3px'
@@ -788,7 +788,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingLeft: '15px',
                   paddingRight: '15px',
                   borderRadius: '6px',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   maxWidth:'18vw',
                   fontFamily: 'monospace',
                   borderColor: 'goldenrod',
@@ -836,7 +836,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingRight: '15px',
                   maxWidth:'18vw',
                   borderRadius: '6px',
-                  fontSize: '20px',
+                  fontSize: '15px',
                   fontFamily: 'monospace',
                   borderColor: 'goldenrod',
                   borderWidth: '3px'
