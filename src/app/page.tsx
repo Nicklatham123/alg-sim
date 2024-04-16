@@ -379,7 +379,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         
 
         // Delay to visualize each iteration (optional)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, this.state.maxIterations * 40 ));
       }
       if (this.state.stop){
         this.setState({algorithmRunning:false, stop:false})
