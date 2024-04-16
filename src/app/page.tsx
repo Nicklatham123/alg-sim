@@ -326,12 +326,13 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         var randomIndices = allIndices.slice(0, numRandomAtoms);
         
         var randomAtoms = randomIndices.map(index => solution[index]);
-
+        
         var a1Index = solution.indexOf(randomAtoms[0]);
         var a2Index = solution.indexOf(randomAtoms[1]);
 
-        var adjustedAtoms: Solution = this.collide(randomAtoms);
+        var beforeScore = this.evaluateProject(randomAtoms[0]) + this.evaluateProject(randomAtoms[1])
 
+        const [adjustedAtoms, afterScore] = this.collide(randomAtoms);
         solution[a1Index] = adjustedAtoms[0];
         solution[a2Index] = adjustedAtoms[1];
 
@@ -339,7 +340,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         if (currentEvaluation > bestPerformance) {
             bestSolution = solution.slice();
             bestPerformance = currentEvaluation;
-            console.log(bestPerformance)
+            // console.log(bestPerformance)
         
 
           // Update chart data
@@ -469,12 +470,12 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
     const t0Score = this.evaluateProject(atoms[0]) + this.evaluateProject(atoms[1]);
     if (t0Score > t1Score && t0Score > t2Score && this.state.acceptOriginal){
-      return atoms
+      return [atoms, t0Score]
     }
     if (t1Score > t2Score){
-      return t1Atoms
+      return [t1Atoms, t1Score]
     }else {
-      return t2Atoms
+      return [t2Atoms, t2Score]
     }
   }
 
@@ -498,7 +499,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     if (requirementsMet){
       sumPerformance += this.calculatePerformance(project)
     }else{
-      sumPerformance -= this.calculatePerformance(project)
+      // sumPerformance -= this.calculatePerformance(project)
     }
 
     return sumPerformance
@@ -851,7 +852,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   paddingLeft: '15px',
                   paddingRight: '15px',
                   width:'18vw',
-                  
+
                   maxWidth:'18vw',
                   borderRadius: '6px',
                   fontSize: '15px',
