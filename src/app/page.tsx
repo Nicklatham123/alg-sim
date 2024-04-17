@@ -326,7 +326,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
         var beforeScore = this.evaluateProject(randomAtoms[0]) + this.evaluateProject(randomAtoms[1])
 
-        const [adjustedAtoms, afterScore] = this.collide(randomAtoms);
+        const adjustedAtoms= this.collide(randomAtoms);
         solution[a1Index] = adjustedAtoms[0];
         solution[a2Index] = adjustedAtoms[1];
 
@@ -461,12 +461,12 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
     const t0Score = this.evaluateProject(atoms[0]) + this.evaluateProject(atoms[1]);
     if (t0Score > t1Score && t0Score > t2Score && this.state.acceptOriginal){
-      return [atoms, t0Score]
+      return atoms
     }
     if (t1Score > t2Score){
-      return [t1Atoms, t1Score]
+      return t1Atoms
     }else {
-      return [t2Atoms, t2Score]
+      return t2Atoms
     }
   }
 
