@@ -294,21 +294,15 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     this.setState({ algorithmRunning: true, currentSolution:[], currentPerformance:0});
 
     var solution:Solution = this.generateRandomSolution();
-    // if (this.state.firstRun){
-    // }else{
-    //   solution = this.state.currentSolution;
-    // }
-    // this.setState({firstRun:false})
-
     var bestSolution: Solution = solution;
     var bestPerformance = this.evaluateSolution(solution)
     const numRandomAtoms = 2;
     const solutionLength = solution.length;
 
     const timeout = setTimeout(() => {
-      // Set the flag to stop the loop after 15 seconds
       this.setState({ stop: true });
     }, Math.round(this.state.maxIterations * 1000));
+    
     var iterations = 0;
     while (!this.state.stop){
     // for (var i = 0; i< this.state.maxIterations;i++){
@@ -360,7 +354,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             }
           }
         
-          // Update chart data in the state
           this.setState({
               data: {
                   labels: projectLabels,
@@ -378,8 +371,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
           });
       this.analysePerformance(bestSolution)
         
-
-        // Delay to visualize each iteration (optional)
         await new Promise(resolve => setTimeout(resolve, this.state.maxIterations * 40 ));
       }
       if (this.state.stop){
@@ -388,7 +379,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       }
 
     }
-    // clearTimeout(timeout);
+    clearTimeout(timeout);
 
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
@@ -499,7 +490,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     if (requirementsMet){
       sumPerformance += this.calculatePerformance(project)
     }else{
-      // sumPerformance -= this.calculatePerformance(project)
+      sumPerformance -= this.calculatePerformance(project) * 0.75
     }
 
     return sumPerformance
