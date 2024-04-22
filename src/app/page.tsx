@@ -18,9 +18,7 @@ type Project = {
 
 type Solution = Array<Project>
 
-interface HomePageProps {
-  // Define the type for props here if needed
-}
+interface HomePageProps {}
 
 interface HomePageState {
   b1_hover: boolean;
@@ -92,7 +90,6 @@ interface HomePageState {
     sumPerformance:number,
   };
 }
-
 
 export default class HomePage extends Component<HomePageProps, HomePageState>{
   constructor(props:HomePageProps) {
@@ -180,19 +177,25 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
   
   fetchData(){
-    fetch('/project_data_30_5.json')
-    .then(response => response.json())
-    .then(data => {
-      // Extract available resources and projects from the data
-      const { meta, projects } = data;
-      const availableResources = meta.available_resources;
-      // Update state with fetched data
-      this.setState({ availableResources, projects });
-      this.setState({currentSolution: projects})
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
-    });
+    const file = this.state.selectedFile
+    if (file){
+      this.handleFileChange(file)
+    }else{
+      fetch('/project_data_30_5.json')
+      .then(response => response.json())
+      .then(data => {
+        // Extract available resources and projects from the data
+        const { meta, projects } = data;
+        const availableResources = meta.available_resources;
+        // Update state with fetched data
+        this.setState({ availableResources, projects });
+        this.setState({ currentSolution: projects})
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+    }
+
   }
 
   genRanHex(size:number){
@@ -201,6 +204,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
 
   handleFileChange = (event:any) => {
     const selectedFile = event.target.files[0];
+
+    this.setState({selectedFile: event})
 
     // Create a new FileReader instance
     const reader = new FileReader();
@@ -222,19 +227,12 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     reader.readAsText(selectedFile);
 };
 
-  handleUpload = () => {
-      const { selectedFile } = this.state;
-
-      
-  };
-
-
   handleClicked(){
     this.fetchData();
     const valid = this.checkProblem();
     if (valid){
       this.setState({stop:false})
-      this.runATO(10000);
+      this.runATO(this.state.maxIterations);
     }else{
       console.log('Invalid')
     }
@@ -267,6 +265,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   generateRandomSolution = () => {
     var solution:Solution = this.state.projects
     var availableResources = this.state.availableResources
+
     for (var i = 0; i<availableResources.length;i++){
       while (availableResources[i] > 0){
         this.setState({generatingSolution:true})
@@ -282,11 +281,11 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
           }
 
         }else{
-          // console.error('allocation failed - over optimal constraint')
+          console.error('allocation failed - over optimal constraint')
         }
       }
     }
-    this.setState({generatingSolution:false, currentPerformance:this.evaluateSolution(solution)})
+    this.setState({generatingSolution:false, currentPerformance:this.evaluateSolution(solution), currentSolution:solution})
     return solution
   }
 
@@ -305,74 +304,67 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     
     var iterations = 0;
     while (!this.state.stop){
-    // for (var i = 0; i< this.state.maxIterations;i++){
-        // iterations ++;
-        // this.setState({iteration:iterations})
-
         // Select 2 Random Atoms
         var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
-        
         for (let i = solutionLength - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
         }
-        
         var randomIndices = allIndices.slice(0, numRandomAtoms);
-        
         var randomAtoms = randomIndices.map(index => solution[index]);
-        
         var a1Index = solution.indexOf(randomAtoms[0]);
         var a2Index = solution.indexOf(randomAtoms[1]);
 
         var beforeScore = this.evaluateProject(randomAtoms[0]) + this.evaluateProject(randomAtoms[1])
-
+        
+        // collide two random atoms
         const adjustedAtoms= this.collide(randomAtoms);
         solution[a1Index] = adjustedAtoms[0];
         solution[a2Index] = adjustedAtoms[1];
 
+        // Update best solution
         var currentEvaluation = this.evaluateSolution(solution);
         if (currentEvaluation > bestPerformance) {
             bestSolution = solution.slice();
             bestPerformance = currentEvaluation;
-            // console.log(bestPerformance)
         
+        // Update chart data
+        var projects = bestSolution.map(p => p.project_id);
+        var resourceAllocations = bestSolution.map(p => p.allocated);
 
-          // Update chart data
-          var projects = bestSolution.map(p => p.project_id);
-          var resourceAllocations = bestSolution.map(p => p.allocated);
+        var projectLabels = [];
+        var projectResourceAllocations = [];
 
-          var projectLabels = [];
-          var projectResourceAllocations = [];
-
-          for (let j = 0; j < projects.length; j++) {
-            const projectLabelPrefix = `Project${j}`;
-        
-            // Push resource labels and allocations for each project
-            for (let k = 0; k < 3; k++) {
-                projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
-                projectResourceAllocations.push(resourceAllocations[j][k]);
-            }
+        for (let j = 0; j < projects.length; j++) {
+          const projectLabelPrefix = `Project${j}`;
+      
+          // Push resource labels and allocations for each project
+          for (let k = 0; k < 3; k++) {
+              projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
+              projectResourceAllocations.push(resourceAllocations[j][k]);
           }
-        
-          this.setState({
-              data: {
-                  labels: projectLabels,
-                  datasets: [
-                      {
-                          label: "",
-                          data: projectResourceAllocations,
-                          backgroundColor: `goldenrod`,
-                          borderColor: `orange`,
-                          borderWidth: 1,
-                      },
-                  ],
-              },
-              currentPerformance:Math.round(bestPerformance)
-          });
+        }
+      
+        this.setState({
+            data: {
+                labels: projectLabels,
+                datasets: [
+                    {
+                        label: "",
+                        data: projectResourceAllocations,
+                        backgroundColor: `goldenrod`,
+                        borderColor: `orange`,
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            currentPerformance:Math.round(bestPerformance)
+        });
       this.analysePerformance(bestSolution)
         
-        await new Promise(resolve => setTimeout(resolve, this.state.maxIterations * 40 ));
+      await new Promise(resolve => setTimeout(resolve, this.state.maxIterations * 40 ));
       }
+
       if (this.state.stop){
         this.setState({algorithmRunning:false, stop:false})
         return
@@ -386,18 +378,17 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     console.log(bestSolution)
     this.setState({ algorithmRunning: false });
 }
-
-
   stopRunning(){
     this.setState({stop:true})
   }
 
-  
   collide(atoms:Solution){
     var t1Atoms = atoms.slice();
     var t2Atoms = atoms.slice();
 
     const numberOfResources = this.state.availableResources.length
+
+    // Trade 1
     for (var i = 0; i<numberOfResources;i++){
       if (t1Atoms[1].allocated[i] > 0){
         var randomP2Segments = [];
@@ -426,6 +417,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       }
     }
     
+    // Trade 2
     const t1Score = this.evaluateProject(t1Atoms[0]) + this.evaluateProject(t1Atoms[1]);
 
     for (var i = 0; i<numberOfResources;i++){
@@ -451,13 +443,13 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               p2Want = Math.max(...p2Wants)
               break;
           }
-          
-
           t2Atoms[1].allocated[i] += p2Want
           t2Atoms[0].allocated[i] -= p2Want
         }
       }
     }
+
+    // Trade Comparison
     const t2Score = this.evaluateProject(t2Atoms[0]) + this.evaluateProject(t2Atoms[1]);
     const t0Score = this.evaluateProject(atoms[0]) + this.evaluateProject(atoms[1]);
     if (t0Score > t1Score && t0Score > t2Score && this.state.acceptOriginal){
@@ -471,6 +463,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
 
   evaluateSolution(solution:Solution){
+    // Solution Evaluation Function
     var sumPerformance = 0
     for (const project of solution){
       sumPerformance += this.evaluateProject(project)
@@ -479,6 +472,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
 
   evaluateProject(project:Project){
+    // Project Evaluation Function
     var numberOfResources = this.state.availableResources.length
     var sumPerformance = 0
     var requirementsMet = true
@@ -497,26 +491,28 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   }
 
   calculatePerformance(project:Project){
-      const allocated = project.allocated
-      const required = project.required
-      const weights = project.weights
-      // Check if the lists have the same length
-        if (allocated.length !== weights.length) {
-          throw new Error("Lists must have the same length");
-      }
-      // Initialize the sum
-      var sum = 0;
-      
-      // Iterate through both lists and accumulate the sum
-      for (var i = 0; i < allocated.length; i++) {
-        sum += allocated[i] * weights[i];
-      }
-      
-      // Return the sum
-      return sum;
+    // Project Return Function
+    const allocated = project.allocated
+    const required = project.required
+    const weights = project.weights
+    // Check if the lists have the same length
+      if (allocated.length !== weights.length) {
+        throw new Error("Lists must have the same length");
+    }
+    // Initialize the sum
+    var sum = 0;
+    
+    // Iterate through both lists and accumulate the sum
+    for (var i = 0; i < allocated.length; i++) {
+      sum += allocated[i] * weights[i];
+    }
+    
+    // Return the sum
+    return sum;
   }
 
   analysePerformance(solution:Solution){
+    // Solution Analysis Function
     var numActivated = 0
     var sumPerformance = 0
     var sumResourcesUsed = Array(this.state.availableResources.length).fill(0);
@@ -529,7 +525,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         var projectSatisfaction = 0
         for (var i=0;i<project.allocated.length;i++){
             sumResourcesUsed[i] += project.allocated[i]
-            // project_satisfaction += (project.resources[i] * project.performance_weights[i]) / (project.optimal_resources[i] * project.performance_weights[i])
             
             // Negating Performance If A Resource Requirement is not met
             if (project.allocated[i] < project.required[i]){
@@ -571,7 +566,6 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
   handleFileButtonClick = () => {
     const fileInputElement = document.getElementById('fileInput');
     if (fileInputElement) {
-        // Trigger file selection dialog by clicking the hidden input element
         fileInputElement.click();
     } else {
         console.error('File input element not found');
@@ -615,9 +609,9 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
           <div style={{backgroundColor:'goldenrod', width:'80vw', marginLeft:'10vw', height:'3px', display:'flex', flex:1, flexDirection:'row'}}></div>
           <div style={{
                 display: 'flex',
-                flexDirection: 'row', // Arrange children horizontally
+                flexDirection: 'row',
                 backgroundColor: '#313131',
-                width: '90vw', // Adjust the width as needed
+                width: '90vw',
                 height: '80vh',
                 marginLeft:'5vw',
                 marginTop: '20px',
@@ -626,8 +620,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 borderWidth:'3px'
             }}>
             <div style={{
-                flex: 1, // Occupy remaining space
-                margin: '15px', // Adjust margin as needed
+                flex: 1,
+                margin: '15px',
                 }}>
               <div style={{
               display: 'flex',
@@ -638,19 +632,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               width: '100%',
             }}>
               <div style={{flexDirection:'column', flex:1,display:'flex', position:'absolute', right:'25vw'}}>
-              {/* <label
-                style={{
-                  alignSelf: 'center',
-                  fontSize: '20px',
-                  fontFamily: 'monospace',
-                  color: 'white',
-                  marginLeft: 'auto',
-                  marginRight : '60px'
-                }}
-              >
-                {`Iteration: ${this.state.iteration+1}`}
-              </label> */}
-                            <label
+                <label
                 style={{
                   alignSelf: 'center',
                   fontSize: '15px',
@@ -708,8 +690,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
             </div>
             <div style={{
                 backgroundColor: '#454545',
-                width: '20vw', // Adjust the width as needed
-                height: '100%', // Occupy full height of the parent
+                width: '20vw',
+                height: '100%',
                 borderTopRightRadius: '6px',
                 borderBottomRightRadius: '6px',
                 borderColor:'goldenrod',
@@ -720,19 +702,16 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                 alignItems:'start',
                 padding:'10px'
             }}>
-            {/* Hide the input element visually */}
             <input
                 type="file"
                 onChange={this.handleFileChange}
-                id="fileInput" // Add an ID for easier reference
-                style={{ display: 'none' }} // Hide the input element
+                id="fileInput"
+                style={{ display: 'none' }}
             />
-
-            {/* Use the button to trigger file selection */}
             <button
                 onMouseEnter={() => this.setState({ b5_hover: true })}
                 onMouseLeave={() => this.setState({ b5_hover: false })}
-                onClick={this.handleFileButtonClick} // Use a different click handler for the button
+                onClick={this.handleFileButtonClick}
                 disabled={this.state.algorithmRunning}
                 style={{
                     alignSelf: 'center',
