@@ -26,6 +26,7 @@ interface HomePageState {
   b3_hover: boolean;
   b4_hover:boolean;
   b5_hover:boolean;
+  b6_hover:boolean;
   selected_alg: string;
   algorithmRunning: boolean;
   projects: Solution;
@@ -89,6 +90,7 @@ interface HomePageState {
     numActivated:number,
     sumPerformance:number,
   };
+  sortVisuals:boolean;
 }
 
 export default class HomePage extends Component<HomePageProps, HomePageState>{
@@ -101,6 +103,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
       b3_hover:false,
       b4_hover:false,
       b5_hover:false,
+      b6_hover:false,
       selected_alg:'ato',
       algorithmRunning:false,
       projects: [],
@@ -128,7 +131,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
           },
           x: {
             ticks: {
-              display: false, // hide the x-axis ticks
+              display: true, // hide the x-axis ticks
             },
           },
         },
@@ -164,7 +167,8 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         avgProjectSatisfaction:0,
         numActivated:0,
         sumPerformance:0,
-      }
+      },
+      sortVisuals:false,
       
     };
     
@@ -331,19 +335,39 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
         // Update chart data
         var projects = bestSolution.map(p => p.project_id);
         var resourceAllocations = bestSolution.map(p => p.allocated);
+        var requiredResourceAllocations = bestSolution.map(p => p.required);
+        var optimalResourceAllocations = bestSolution.map(p => p.optimal);
 
-        var projectLabels = [];
-        var projectResourceAllocations = [];
+        // Initialize arrays to store labels and data pairs
+        var projectData = [];
+        var projectsRequiredData = [];
+        var projectsOptimalData = [];
 
         for (let j = 0; j < projects.length; j++) {
-          const projectLabelPrefix = `Project${j}`;
-      
-          // Push resource labels and allocations for each project
-          for (let k = 0; k < 3; k++) {
-              projectLabels.push(`${projectLabelPrefix} (Resource ${k})`);
-              projectResourceAllocations.push(resourceAllocations[j][k]);
-          }
+            const projectLabelPrefix = `Project${j}`;
+          
+            // Push resource labels and allocations for each project
+            for (let k = 0; k < 3; k++) {
+                const resourceLabel = `${projectLabelPrefix} (Resource ${k})`;
+                projectData.push({ label: resourceLabel, value: resourceAllocations[j][k] });
+                projectsRequiredData.push({ label: resourceLabel, value: requiredResourceAllocations[j][k] });
+                projectsOptimalData.push({ label: resourceLabel, value: optimalResourceAllocations[j][k] });
+            }
         }
+
+        // Sort the data arrays while maintaining the association with labels
+        if (this.state.sortVisuals){
+            projectData.sort((a, b) => b.value - a.value);
+            projectsRequiredData.sort((a, b) => b.value - a.value);
+            projectsOptimalData.sort((a, b) => b.value - a.value);
+        }
+
+        // Extract sorted labels and data arrays
+        var projectLabels = projectData.map(item => item.label);
+        var projectResourceAllocations = projectData.map(item => item.value);
+        var projectsRequired = projectsRequiredData.map(item => item.value);
+        var projectsOptimal = projectsOptimalData.map(item => item.value);
+
       
         this.setState({
             data: {
@@ -356,6 +380,22 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                         borderColor: `orange`,
                         borderWidth: 1,
                     },
+                    {
+                      label: "Required",
+                      data: projectsRequired, // Assuming project.required is an array containing required values for each project
+                      type: 'line',
+                      fill: false,
+                      borderColor: 'red',
+                      borderWidth: 2,
+                  },
+                  {
+                    label: "Optimal",
+                    data: projectsOptimal, // Assuming project.required is an array containing required values for each project
+                    type: 'line',
+                    fill: false,
+                    borderColor: 'green',
+                    borderWidth: 2,
+                }
                 ],
             },
             currentPerformance:Math.round(bestPerformance)
@@ -759,6 +799,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
               >
                 {`Accept Original (${this.state.acceptOriginal ? `On` : `Off`})`}
               </button>
+
               <button
                 onMouseEnter={() => this.setState({ b4_hover: true })}
                 onMouseLeave={() => this.setState({ b4_hover: false })}
@@ -806,6 +847,29 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   borderColor: 'goldenrod',
                   borderWidth: '3px'
                 }}></input>
+                              <button
+                disabled={this.state.algorithmRunning}
+                onMouseEnter={() => this.setState({ b6_hover: true })}
+                onMouseLeave={() => this.setState({ b6_hover: false })}
+                onClick={() => this.setState({sortVisuals:!this.state.sortVisuals})}
+                style={{
+                  alignSelf:'center',
+                  marginBottom: '10px',
+                  backgroundColor: this.state.sortVisuals ? 'goldenrod' : (this.state.b6_hover ? '#676767' : '#545454'),
+                  color: 'white',
+                  padding: '10px',
+                  width:'18vw',
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  borderRadius: '6px',
+                  fontSize: '15px',
+                  fontFamily: 'monospace',
+                  borderColor: 'goldenrod',
+                  borderWidth: '3px'
+                }}
+              >
+                {`Sort Visuals (${this.state.sortVisuals ? `On` : `Off`})`}
+              </button>
                   <button
                 onMouseEnter={() => this.setState({ b2_hover: true })}
                 onMouseLeave={() => this.setState({ b2_hover: false })}
