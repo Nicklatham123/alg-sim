@@ -34,11 +34,13 @@ interface HomePageState {
   data: {
     labels: string[];
     datasets: {
-      label: string;
+      label?: string;
       data: number[];
-      backgroundColor: string;
-      borderColor: string;
-      borderWidth: number;
+      backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
+      type?:string;
+      fill?:boolean;
     }[];
   };
   options: {
@@ -185,7 +187,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     if (file){
       this.handleFileChange(file)
     }else{
-      fetch('/project_data_30_5.json')
+      fetch('/project_data_30_2.json')
       .then(response => response.json())
       .then(data => {
         // Extract available resources and projects from the data
@@ -307,117 +309,119 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     }, Math.round(this.state.maxIterations * 1000));
     
     var iterations = 0;
-    while (!this.state.stop){
-        // Select 2 Random Atoms
-        var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
-        for (let i = solutionLength - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
-        }
-        var randomIndices = allIndices.slice(0, numRandomAtoms);
-        var randomAtoms = randomIndices.map(index => solution[index]);
-        var a1Index = solution.indexOf(randomAtoms[0]);
-        var a2Index = solution.indexOf(randomAtoms[1]);
+    for (var i=0; i<this.state.maxIterations*1000;i++){
+      iterations++;
+      // Select 2 Random Atoms
+      var allIndices = Array.from({ length: solutionLength }, (_, index) => index);
+      for (let i = solutionLength - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
+      }
+      var randomIndices = allIndices.slice(0, numRandomAtoms);
+      var randomAtoms = randomIndices.map(index => solution[index]);
+      var a1Index = solution.indexOf(randomAtoms[0]);
+      var a2Index = solution.indexOf(randomAtoms[1]);
 
-        var beforeScore = this.evaluateProject(randomAtoms[0]) + this.evaluateProject(randomAtoms[1])
-        
-        // collide two random atoms
-        const adjustedAtoms= this.collide(randomAtoms);
-        solution[a1Index] = adjustedAtoms[0];
-        solution[a2Index] = adjustedAtoms[1];
-
-        // Update best solution
-        var currentEvaluation = this.evaluateSolution(solution);
-        if (currentEvaluation > bestPerformance) {
-            bestSolution = solution.slice();
-            bestPerformance = currentEvaluation;
-        
-        // Update chart data
-        var projects = bestSolution.map(p => p.project_id);
-        var resourceAllocations = bestSolution.map(p => p.allocated);
-        var requiredResourceAllocations = bestSolution.map(p => p.required);
-        var optimalResourceAllocations = bestSolution.map(p => p.optimal);
-
-        // Initialize arrays to store labels and data pairs
-        var projectData = [];
-        var projectsRequiredData = [];
-        var projectsOptimalData = [];
-
-        for (let j = 0; j < projects.length; j++) {
-            const projectLabelPrefix = `Project${j}`;
-          
-            // Push resource labels and allocations for each project
-            for (let k = 0; k < 3; k++) {
-                const resourceLabel = `${projectLabelPrefix} (Resource ${k})`;
-                projectData.push({ label: resourceLabel, value: resourceAllocations[j][k] });
-                projectsRequiredData.push({ label: resourceLabel, value: requiredResourceAllocations[j][k] });
-                projectsOptimalData.push({ label: resourceLabel, value: optimalResourceAllocations[j][k] });
-            }
-        }
-
-        // Sort the data arrays while maintaining the association with labels
-        if (this.state.sortVisuals){
-            projectData.sort((a, b) => b.value - a.value);
-            projectsRequiredData.sort((a, b) => b.value - a.value);
-            projectsOptimalData.sort((a, b) => b.value - a.value);
-        }
-
-        // Extract sorted labels and data arrays
-        var projectLabels = projectData.map(item => item.label);
-        var projectResourceAllocations = projectData.map(item => item.value);
-        var projectsRequired = projectsRequiredData.map(item => item.value);
-        var projectsOptimal = projectsOptimalData.map(item => item.value);
-
+      var beforeScore = this.evaluateProject(randomAtoms[0]) + this.evaluateProject(randomAtoms[1])
       
-        this.setState({
-            data: {
-                labels: projectLabels,
-                datasets: [
-                    {
-                        label: "",
-                        data: projectResourceAllocations,
-                        backgroundColor: `goldenrod`,
-                        borderColor: `orange`,
-                        borderWidth: 1,
-                    },
-                    {
-                      label: "Required",
-                      data: projectsRequired, // Assuming project.required is an array containing required values for each project
-                      type: 'line',
-                      fill: false,
-                      borderColor: 'red',
-                      borderWidth: 2,
+      // collide two random atoms
+      const adjustedAtoms= this.collide(randomAtoms);
+      solution[a1Index] = adjustedAtoms[0];
+      solution[a2Index] = adjustedAtoms[1];
+
+      // Update best solution
+      var currentEvaluation = this.evaluateSolution(solution);
+      if (currentEvaluation > bestPerformance) {
+        bestSolution = solution.slice();
+        bestPerformance = currentEvaluation;
+        this.analysePerformance(bestSolution)
+      }
+
+      // Update chart data
+      var projects = bestSolution.map(p => p.project_id);
+      var resourceAllocations = bestSolution.map(p => p.allocated);
+      var requiredResourceAllocations = bestSolution.map(p => p.required);
+      var optimalResourceAllocations = bestSolution.map(p => p.optimal);
+
+    // Initialize arrays to store labels and data pairs
+    var projectData = [];
+    var projectsRequiredData = [];
+    var projectsOptimalData = [];
+
+    for (let j = 0; j < projects.length; j++) {
+        const projectLabelPrefix = `Project${j}`;
+      
+        // Push resource labels and allocations for each project
+        for (let k = 0; k < this.state.availableResources.length; k++) {
+            const resourceLabel = `${projectLabelPrefix} (Resource ${k})`;
+            projectData.push({ label: resourceLabel, allocated: resourceAllocations[j][k], required: requiredResourceAllocations[j][k], optimal: optimalResourceAllocations[j][k] });
+            projectsRequiredData.push({ label: resourceLabel, value: requiredResourceAllocations[j][k], allocated: resourceAllocations[j][k], optimal: optimalResourceAllocations[j][k] });
+            projectsOptimalData.push({ label: resourceLabel, value: optimalResourceAllocations[j][k], allocated: resourceAllocations[j][k], required: requiredResourceAllocations[j][k] });
+        }
+    }
+
+    // Sort the data arrays while maintaining the association with labels
+    if (this.state.sortVisuals){
+        projectData.sort((a, b) => b.allocated - a.allocated);
+        projectsRequiredData.sort((a, b) => b.value - a.value);
+        projectsOptimalData.sort((a, b) => b.value - a.value);
+    }
+
+    // Extract sorted labels and data arrays
+    var projectLabels = projectsRequiredData.map(item => item.label);
+    var projectResourceAllocations = projectData.map(item => item.allocated);
+    var projectsRequired = projectsRequiredData.map(item => item.value);
+    var projectsOptimal = projectsOptimalData.map(item => item.value);
+    
+      this.setState({
+          data: {
+              labels: projectLabels,
+              datasets: [
+                  {
+                      label: "Allocated",
+                      data: projectResourceAllocations,
+                      backgroundColor: `goldenrod`,
+                      borderColor: `orange`,
+                      borderWidth: 1,
+                  },
+                  {
+                    label: "Required",
+                    data: projectsRequired,
+                    type: 'line',
+                    fill: false,
+                    borderColor: 'red',
+                    borderWidth: 2,
                   },
                   {
                     label: "Optimal",
-                    data: projectsOptimal, // Assuming project.required is an array containing required values for each project
+                    data: projectsOptimal,
                     type: 'line',
                     fill: false,
                     borderColor: 'green',
                     borderWidth: 2,
-                }
+                  }
                 ],
-            },
-            currentPerformance:Math.round(bestPerformance)
-        });
-      this.analysePerformance(bestSolution)
-        
-      await new Promise(resolve => setTimeout(resolve, this.state.maxIterations * 40 ));
-      }
+          },
+          currentPerformance:Math.round(bestPerformance)
+      });
+    
+      await new Promise(resolve => setTimeout(resolve, 2));
 
       if (this.state.stop){
         this.setState({algorithmRunning:false, stop:false})
-        return
+        break
       }
 
     }
-    clearTimeout(timeout);
-
+    // clearTimeout(timeout);
     console.log('Best Solution: ' + bestPerformance)
     console.log('Solution')
     console.log(bestSolution)
+    // this.analysePerformance(bestSolution)
+
     this.setState({ algorithmRunning: false });
-}
+  }
+  
   stopRunning(){
     this.setState({stop:true})
   }
@@ -515,19 +519,44 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     // Project Evaluation Function
     var numberOfResources = this.state.availableResources.length
     var sumPerformance = 0
+    var resourcesMet = this.state.availableResources.length+1
     var requirementsMet = true
+    var sumDistance = 0
+    var optimalPerformance = 0
     for (var i = 0; i<numberOfResources;i++){
-      if (project.allocated[i] < project.required[i]){ 
+      if (project.allocated[i] < project.required[i]){
         requirementsMet = false
+        resourcesMet --;
       }
+      optimalPerformance += project.optimal[i] * project.weights[i]
+
     }
+    optimalPerformance = optimalPerformance / numberOfResources
     if (requirementsMet){
-      sumPerformance += this.calculatePerformance(project)
+      sumPerformance = this.calculatePerformance(project)
     }else{
-      sumPerformance -= this.calculatePerformance(project) * 0.75
+      sumPerformance = -1 * (this.calculatePerformance(project) * (1-(resourcesMet/numberOfResources)))
     }
 
     return sumPerformance
+    // if (requirementsMet){
+    //   sumPerformance += this.calculatePerformance(project)
+    // }else{
+      // sumPerformance -= this.calculatePerformance(project)
+
+      // sumPerformance += (requirementsMet/this.state.availableResources.length) * this.calculatePerformance(project)
+    // }
+    // sumPerformance += project.allocated[i] / (project.required[i]+((project.optimal[i] - project.required[i])/2))
+
+    // return sumPerformance
+
+    // if (requirementsMet){
+    //   sumPerformance += this.calculatePerformance(project)
+    // }else{
+    //   sumPerformance -= this.calculatePerformance(project)
+    // }
+
+    // return sumPerformance;
   }
 
   calculatePerformance(project:Project){
@@ -591,7 +620,7 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
     console.log(this.state.availableResources)
     console.log(`Resources Used Constraint Check: ${this.state.availableResources.every((element, index) => element === sumResourcesUsed[index])}, Over Optimal Constraint Check: ${numOverOptimal == 0}`)
     console.log(`Activated Projects: ${numActivated}/${(solution.length)}`)
-    console.log(`Sum Return: ${this.evaluateSolution(solution)}`)
+    console.log(`Sum Return: ${sumPerformance}`)
     console.log(`Avg Project Satisfaction (Of Activated): ${avgProjectSatisfaction}`)
     console.log(`Wasted Resources: ${waste}`)
     this.setState({currentStats:{
@@ -708,6 +737,14 @@ export default class HomePage extends Component<HomePageProps, HomePageState>{
                   color: 'white',
                   marginLeft: 'auto',
                   marginRight : '40px'}}>{`Num Activated: ${this.state.currentStats.numActivated} / ${this.state.currentSolution.length}`}</label>
+              <label
+                style={{
+                  alignSelf: 'center',
+                  fontSize: '15px',
+                  fontFamily: 'monospace',
+                  color: 'white',
+                  marginLeft: 'auto',
+                  marginRight : '40px'}}>{`Num Resources: ${this.state.availableResources.length}`}</label>
               <label
                 style={{
                   alignSelf: 'center',
